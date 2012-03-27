@@ -1,0 +1,2 @@
+Depends: ${misc:Depends}, ${perl:Depends}, liblog-contextual-perl, liblog-log4perl-perl, libpadwalker-perl
+
