@@ -1,0 +1,81 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use Data::Dumper;
+use File::stat;
+use Getopt::Long qw/:config gnu_getopt no_auto_abbrev/;
+use Log::Contextual qw/:log :dlog set_logger with_logger/;
+use Log::Contextual::SimpleLogger;
+use Log::Log4perl ':easy';
+use PadWalker qw/peek_my/;
+
+
+# global variables
+my $VERSION = '0.20120327';
+
+
+# Getopt::Long
+my $debug   = '';
+my $file    = '';
+my $help    = '';
+my $verbose = '';
+my $version = '';
+
+GetOptions ('debug|d+'   => \$debug,
+            'file|f=s'   => \$file,
+            'help|h+'    => \$help,
+            'verbose|v+' => \$verbose,
+            'version+'   => \$version,
+) || help(1);
+
+
+# Set verbosity level and set up logger
+if ($debug) {
+	Log::Log4perl->easy_init($TRACE);
+} elsif ($verbose) {
+	Log::Log4perl->easy_init($DEBUG);
+} else {
+	Log::Log4perl->easy_init($INFO);
+}
+my $logger = Log::Log4perl->get_logger;
+set_logger $logger;
+
+
+sub help {
+	#TODO Switch to POD
+	#TODO use Getopt::Long qw/:config auto_help/
+	my ($ret)=@_;
+	print "usage: $0 <args> <glob>
+
+	--debug|d   Print debug messages
+	--file|f    Specify storage file
+	--help|h    Display this help
+	--verbose|v Print verbose messages
+	--version   Display version information
+";
+	exit $ret;
+}
+
+sub version {
+	#TODO use Getopt::Long qw/:config auto_version/
+	print "$0 version $VERSION\n";
+	exit;
+}
+
+sub main {
+	log_trace {'All variables'} print Dumper peek_my(0);
+	log_trace {'trace'};
+	log_debug {'debug'};
+	log_info  {'info'};
+	log_warn  {'warn'};
+	log_error {'error'};
+	log_fatal {'fatal'};
+
+
+	version if $version;
+	help(0) if $help;
+}
+
+main;
