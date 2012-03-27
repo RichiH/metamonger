@@ -1,0 +1,5 @@
+metamonger	version: 0
+#filename	owner_name	group_name	etc	pp
+#
+file1	richih	richih	foo	bar
+relative/path/to/file2	root	root	foo	bar

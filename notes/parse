@@ -1,0 +1,9 @@
+first_run = 1
+if /^metamonger/
+	first_run=0
+else
+	abort
+
+while <>
+	next if ^$|^#
+	parse
