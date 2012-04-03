@@ -5,12 +5,12 @@ use warnings;
 
 use Data::Dumper;
 use File::stat;
+use File::Util;
 use Getopt::Long qw/:config gnu_getopt no_auto_abbrev/;
 use Log::Contextual qw/:log :dlog set_logger with_logger/;
 use Log::Contextual::SimpleLogger;
 use Log::Log4perl ':easy';
 use PadWalker qw/peek_my/;
-
 
 # global variables
 my $VERSION = '0.20120327';
@@ -42,6 +42,8 @@ if ($debug) {
 my $logger = Log::Log4perl->get_logger;
 set_logger $logger;
 
+my $file_util = File::Util->new();
+
 
 sub help {
 	#TODO Switch to POD
@@ -65,13 +67,33 @@ sub version {
 }
 
 sub main {
-	log_trace {"All variables\n" . Dumper peek_my(0)};
-	log_trace {'trace'};
-	log_debug {'debug'};
-	log_info  {'info'};
-	log_warn  {'warn'};
-	log_error {'error'};
-	log_fatal {'fatal'};
+
+	# Match ARGV to files and directories
+	my @matches;
+	if (@ARGV) {
+		@matches = map glob($_), @ARGV;
+		log_error { "$0: no matches found: '@ARGV'"} unless grep -e $_, @matches;
+	} else {
+		@matches = ('.');
+	}
+	log_trace { "globbing matches:\n" . Dumper @matches };
+
+	# Recurse through directories, add files directly
+	my @files;
+	foreach my $match (@matches) {
+		@files = map $file_util->list_dir($_, '--recurse'), $match if -d $match;
+		push(@files, $match) if -f $match;
+	}
+	log_trace { "fileset:\n" . Dumper @files };
+
+
+#	log_trace {"All variables\n" . Dumper peek_my(0) };
+#	log_trace {'trace'};
+#	log_debug {'debug'};
+#	log_info  {'info'};
+#	log_warn  {'warn'};
+#	log_error {'error'};
+#	log_fatal {'fatal'};
 
 
 	version if $version;
