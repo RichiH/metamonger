@@ -65,7 +65,7 @@ sub version {
 }
 
 sub main {
-	log_trace {'All variables'} print Dumper peek_my(0);
+	log_trace {"All variables\n" . Dumper peek_my(0)};
 	log_trace {'trace'};
 	log_debug {'debug'};
 	log_info  {'info'};
