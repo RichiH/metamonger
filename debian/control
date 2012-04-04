@@ -1,1 +1,1 @@
-Depends: ${misc:Depends}, ${perl:Depends}, libfile-util-perl, liblog-contextual-perl, liblog-log4perl-perl, libpadwalker-perl
+Depends: ${misc:Depends}, ${perl:Depends}, libfile-util-perl, liblog-contextual-perl, liblog-log4perl-perl, libpadwalker-perl, libtext-csv-xs-perl
