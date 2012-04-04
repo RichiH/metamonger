@@ -11,6 +11,7 @@ use Log::Contextual qw/:log :dlog set_logger with_logger/;
 use Log::Contextual::SimpleLogger;
 use Log::Log4perl ':easy';
 use PadWalker qw/peek_my/;
+use Text::CSV_XS;
 
 # global variables
 my $VERSION = '0.20120327';
@@ -18,14 +19,23 @@ my $VERSION = '0.20120327';
 
 # Getopt::Long
 my $debug   = '';
+my $diff    = '';
 my $file    = '';
 my $help    = '';
+my $pretend = '';
+my $restore = '';
+my $save    = '';
 my $verbose = '';
 my $version = '';
 
-GetOptions ('debug|d+'   => \$debug,
+GetOptions (
+            'debug+'     => \$debug,
+            'diff|d+'    => \$diff,
             'file|f=s'   => \$file,
             'help|h+'    => \$help,
+            'pretend|p+' => \$pretend,
+            'restore|r+' => \$restore,
+            'save|s+'    => \$save,
             'verbose|v+' => \$verbose,
             'version+'   => \$version,
 ) || help(1);
@@ -44,6 +54,9 @@ set_logger $logger;
 
 my $file_util = File::Util->new();
 
+sub get_disk_metadata {
+	my (@files) = @_;
+}
 
 sub help {
 	#TODO Switch to POD
@@ -51,11 +64,13 @@ sub help {
 	my ($ret)=@_;
 	print "usage: $0 <args> <glob>
 
-	--debug|d   Print debug messages
-	--file|f    Specify storage file
-	--help|h    Display this help
-	--verbose|v Print verbose messages
-	--version   Display version information
+	--debug      Print debug messages
+	--diff|d     Diff between stored and live metadata
+	--file|f     Specify storage file
+	--help|h     Display this help
+	--pretend|p  Pretend to do something; print results only
+	--verbose|v  Print verbose messages
+	--version    Display version information
 ";
 	exit $ret;
 }
@@ -95,9 +110,9 @@ sub main {
 #	log_error {'error'};
 #	log_fatal {'fatal'};
 
-
 	version if $version;
 	help(0) if $help;
+
 }
 
 main;
