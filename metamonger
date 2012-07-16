@@ -40,6 +40,7 @@ GetOptions (
             'version+'   => \$version,
 ) || help(1);
 
+$pretend=1;
 
 # Set verbosity level and set up logger
 if ($debug) {
@@ -54,8 +55,15 @@ set_logger $logger;
 
 my $file_util = File::Util->new();
 
-sub get_disk_metadata {
-	my (@files) = @_;
+sub get_file_metadata_from_fs {
+	my ($files_ref) = @_;
+	foreach my $file (@$files_ref) {
+		print "-- '$file' --\n";
+		my (undef, undef, $mode, undef, $uid, $gid, undef, undef, $atime, $mtime, $ctime, undef, $blocks) = lstat($file);
+		print Dumper lstat $file;
+		print ($mode & 07777);
+		print $mode;
+	}
 }
 
 sub help {
@@ -100,6 +108,14 @@ sub main {
 		push(@files, $match) if -f $match;
 	}
 	log_trace { "fileset:\n" . Dumper @files };
+
+	if      ( $save && !$restore) {
+		get_file_metadata_from_fs(\@files);
+	} elsif (!$save &&  $restore) {
+		#
+	} else {
+		help(0);
+	}
 
 
 #	log_trace {"All variables\n" . Dumper peek_my(0) };
