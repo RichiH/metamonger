@@ -84,7 +84,6 @@ sub help {
 }
 
 sub version {
-	#TODO use Getopt::Long qw/:config auto_version/
 	print "$0 version $VERSION\n";
 	exit;
 }
