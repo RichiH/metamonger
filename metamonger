@@ -113,6 +113,8 @@ sub main {
 		get_file_metadata_from_fs(\@files);
 	} elsif (!$save &&  $restore) {
 		#
+	} elsif ($version) {
+		version;
 	} else {
 		help(0);
 	}
@@ -125,9 +127,6 @@ sub main {
 #	log_warn  {'warn'};
 #	log_error {'error'};
 #	log_fatal {'fatal'};
-
-	version if $version;
-	help(0) if $help;
 
 }
 
