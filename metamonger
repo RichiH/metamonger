@@ -4,18 +4,21 @@ use strict;
 use warnings;
 
 use Data::Dumper;
-use File::stat;
 use File::Util;
 use Getopt::Long qw/:config gnu_getopt no_auto_abbrev/;
+use Hash::Merge::Simple qw/ merge /;
+use JSON;
 use Log::Contextual qw/:log :dlog set_logger with_logger/;
 use Log::Contextual::SimpleLogger;
 use Log::Log4perl ':easy';
 use PadWalker qw/peek_my/;
+use Shell::Command;
 use Text::CSV_XS;
 
 # global variables
 my $VERSION = '0.20120327';
-
+my $STORAGE_VERSION = '0';
+my $STORAGE = '.metamonger';
 
 # Getopt::Long
 my $debug   = '';
@@ -53,17 +56,51 @@ if ($debug) {
 my $logger = Log::Log4perl->get_logger;
 set_logger $logger;
 
-my $file_util = File::Util->new();
+
+sub get_metadata_from_storage {
+	my ($file_metadata_ref) = @_;
+	#TODO catch and handle non-existing file
+	touch $STORAGE unless -e $STORAGE;
+	open(my $storage_fh, "<", $STORAGE) or do {
+		log_fatal { "Can not open '$STORAGE': $!" };
+		die;
+	};
+
+	# Don't read file as JSON, merge, or check storage version if the file is empty
+	if (eof $storage_fh) {
+		# Merge new data into existing hashref
+		# relaxed mode allows us to read the trailing comma
+		$file_metadata_ref = merge $file_metadata_ref, from_json(do {local $/; <$storage_fh>}, {relaxed => 1});
+		unless ($file_metadata_ref->{config}{storage_version} == $STORAGE_VERSION) {
+			log_fatal { "Wrong storage version: need '$STORAGE_VERSION', got '$file_metadata_ref->{config}{storage_version}'" };
+			die;
+		}
+	}
+
+	return $file_metadata_ref;
+}
 
 sub get_file_metadata_from_fs {
-	my ($files_ref) = @_;
+	my ($files_ref, $file_metadata_ref) = @_;
 	foreach my $file (@$files_ref) {
-		print "-- '$file' --\n";
-		my (undef, undef, $mode, undef, $uid, $gid, undef, undef, $atime, $mtime, $ctime, undef, $blocks) = lstat($file);
-		print Dumper lstat $file;
-		print ($mode & 07777);
-		print $mode;
+		# TODO allow user to store specific metadata, only
+		(undef,                          # device number
+		 undef,                          # inode number
+		 $file_metadata_ref->{metadata}{$file}{mode},
+		 undef,                          # number of (hard) links
+		 undef,                          # numeric user ID
+		 undef,                          # numeric group ID
+		 undef,                          # device identifier
+		 undef,                          # total size
+		 $file_metadata_ref->{metadata}{$file}{atime},
+		 $file_metadata_ref->{metadata}{$file}{mtime},
+		 $file_metadata_ref->{metadata}{$file}{ctime},
+		 undef,                          # preferred block size
+		 undef,                          # blocks allocated
+		) = lstat($file) or log_fatal {"Could not stat '$file': $!"};
 	}
+	log_trace { '%file_metadata: ' . Dumper $file_metadata_ref };
+	return $file_metadata_ref;
 }
 
 sub help {
@@ -83,12 +120,53 @@ sub help {
 	exit $ret;
 }
 
+sub set_defaults {
+	my ($file_metadata_ref) = @_;
+	$file_metadata_ref->{config}{program} = 'metastore';
+	$file_metadata_ref->{config}{storage_version} = 0;
+	$file_metadata_ref->{config}{strict_json} = 0;
+	#TODO 'used metadata'
+	$file_metadata_ref->{config}{tracked_metadata}{ctime} = 0;
+	$file_metadata_ref->{config}{tracked_metadata}{atime} = 1;
+	$file_metadata_ref->{config}{tracked_metadata}{mtime} = 0;
+	$file_metadata_ref->{config}{tracked_metadata}{mode} = 0;
+	return $file_metadata_ref;
+}
+
 sub version {
 	print "$0 version $VERSION\n";
 	exit;
 }
 
+sub write_metadata_to_storage {
+	my ($file_metadata_ref) = @_;
+	my $json = to_json($file_metadata_ref, {canonical => 1, utf8 => 1});
+	$json =~ s/"metadata":{/"metadata":{\n/;
+	$json =~ s/},/},\n/g;
+	if ($file_metadata_ref->{config}{strict_json} == 0) {
+		$json =~ s/}}}/},\n}}\n/g;
+	} else {
+		$json =~ s/}}}/}\n}}\n/g;
+	}
+
+	open(my $storage_fh, ">", $STORAGE) or do {
+		log_fatal { "Can not open '$STORAGE': $!" };
+		die;
+	};
+	print $storage_fh $json;
+	close $storage_fh;
+
+	print $json;
+}
+
 sub main {
+
+	# Avoid doing extra work if we are running cheap code
+	if ($help) {
+		help(0);
+	} elsif ($version) {
+		version;
+	}
 
 	# Match ARGV to files and directories
 	my @matches;
@@ -103,18 +181,30 @@ sub main {
 	# Recurse through directories, add files directly
 	my @files;
 	foreach my $match (@matches) {
+		my $file_util = File::Util->new();
 		@files = map $file_util->list_dir($_, '--recurse'), $match if -d $match;
 		push(@files, $match) if -f $match;
 	}
-	log_trace { "fileset:\n" . Dumper @files };
 
-	if      ( $save && !$restore) {
-		get_file_metadata_from_fs(\@files);
+	# It's likely that we will need this data so let's read it
+	my %file_metadata;
+	my $file_metadata_ref = \%file_metadata;
+
+	#TODO set defaults
+	$file_metadata_ref = set_defaults($file_metadata_ref);
+	#TODO read global config
+	#TODO read user config
+	#TODO read potential command lines options
+
+	$file_metadata_ref = get_metadata_from_storage($file_metadata_ref);
+
+	if ( $save && !$restore) {
+		$file_metadata_ref = get_file_metadata_from_fs(\@files, $file_metadata_ref);
+		write_metadata_to_storage($file_metadata_ref);
 	} elsif (!$save &&  $restore) {
-		#
-	} elsif ($version) {
-		version;
+		#TODO
 	} else {
+		log_trace {'Did not enter any other routine; printing help and exiting'};
 		help(0);
 	}
 
