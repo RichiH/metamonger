@@ -198,10 +198,15 @@ sub main {
 
 	$file_metadata_ref = get_metadata_from_storage($file_metadata_ref);
 
-	if ( $save && !$restore) {
+	if      (!$diff && !$restore &&  $save) {
+		# save live data to file
 		$file_metadata_ref = get_file_metadata_from_fs(\@files, $file_metadata_ref);
 		write_metadata_to_storage($file_metadata_ref);
-	} elsif (!$save &&  $restore) {
+	} elsif (!$diff &&  $restore && !$save) {
+		# restore data from file to live
+		#TODO
+	} elsif ( $diff && !$restore && !$save) {
+		# diff file against live data
 		#TODO
 	} else {
 		log_trace {'Did not enter any other routine; printing help and exiting'};
