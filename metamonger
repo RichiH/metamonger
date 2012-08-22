@@ -172,7 +172,7 @@ sub main {
 	my @matches;
 	if (@ARGV) {
 		@matches = map glob($_), @ARGV;
-		log_error { "$0: no matches found: '@ARGV'"} unless grep -e $_, @matches;
+		log_error { "$0: no matches found for '@ARGV'"} unless grep -e $_, @matches;
 	} else {
 		@matches = ('.');
 	}
