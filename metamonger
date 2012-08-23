@@ -59,7 +59,6 @@ set_logger $logger;
 
 sub get_metadata_from_storage {
 	my ($file_metadata_ref) = @_;
-	#TODO catch and handle non-existing file
 	touch $STORAGE unless -e $STORAGE;
 	open(my $storage_fh, "<", $STORAGE) or do {
 		log_fatal { "Can not open '$STORAGE': $!" };
