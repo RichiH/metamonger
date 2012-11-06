@@ -87,8 +87,8 @@ sub get_file_metadata_from_fs {
 		 undef,                          # inode number
 		 $file_metadata_ref->{metadata}{$file}{mode},
 		 undef,                          # number of (hard) links
-		 undef,                          # numeric user ID
-		 undef,                          # numeric group ID
+		 $file_metadata_ref->{metadata}{$file}{uid},
+		 $file_metadata_ref->{metadata}{$file}{gid},
 		 undef,                          # device identifier
 		 undef,                          # total size
 		 $file_metadata_ref->{metadata}{$file}{atime},
@@ -130,6 +130,8 @@ sub set_defaults {
 	$file_metadata_ref->{config}{tracked_metadata}{ctime} = 0;
 	$file_metadata_ref->{config}{tracked_metadata}{atime} = 1;
 	$file_metadata_ref->{config}{tracked_metadata}{mtime} = 0;
+	$file_metadata_ref->{config}{tracked_metadata}{uid} = 0;
+	$file_metadata_ref->{config}{tracked_metadata}{gid} = 0;
 	$file_metadata_ref->{config}{tracked_metadata}{mode} = 0;
 	return $file_metadata_ref;
 }
