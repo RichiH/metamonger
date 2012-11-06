@@ -113,6 +113,7 @@ sub help {
 	--file|f     Specify storage file
 	--help|h     Display this help
 	--pretend|p  Pretend to do something; print results only
+	--save|s     Save metadata to file
 	--verbose|v  Print verbose messages
 	--version    Display version information
 ";
