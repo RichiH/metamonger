@@ -156,7 +156,7 @@ sub write_metadata_to_storage {
 	print $storage_fh $json;
 	close $storage_fh;
 
-	print $json;
+	log_trace{"metadata stored in '$STORAGE':\n".$json};
 }
 
 sub main {
