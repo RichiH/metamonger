@@ -13,7 +13,6 @@ use Log::Contextual::SimpleLogger;
 use Log::Log4perl ':easy';
 use PadWalker qw/peek_my/;
 use Shell::Command;
-use Text::CSV_XS;
 
 # global variables
 my $VERSION = '0.20120327';
@@ -59,7 +58,6 @@ set_logger $logger;
 
 sub get_metadata_from_storage {
 	my ($file_metadata_ref) = @_;
-	#TODO catch and handle non-existing file
 	touch $STORAGE unless -e $STORAGE;
 	open(my $storage_fh, "<", $STORAGE) or do {
 		log_fatal { "Can not open '$STORAGE': $!" };
@@ -88,13 +86,13 @@ sub get_file_metadata_from_fs {
 		 undef,                          # inode number
 		 $file_metadata_ref->{metadata}{$file}{mode},
 		 undef,                          # number of (hard) links
-		 undef,                          # numeric user ID
-		 undef,                          # numeric group ID
+		 $file_metadata_ref->{metadata}{$file}{uid},
+		 $file_metadata_ref->{metadata}{$file}{gid},
 		 undef,                          # device identifier
 		 undef,                          # total size
 		 $file_metadata_ref->{metadata}{$file}{atime},
 		 $file_metadata_ref->{metadata}{$file}{mtime},
-		 $file_metadata_ref->{metadata}{$file}{ctime},
+		 undef,                          # ctime; can not be set on Unix
 		 undef,                          # preferred block size
 		 undef,                          # blocks allocated
 		) = lstat($file) or log_fatal {"Could not stat '$file': $!"};
@@ -114,6 +112,8 @@ sub help {
 	--file|f     Specify storage file
 	--help|h     Display this help
 	--pretend|p  Pretend to do something; print results only
+	--restore|r  Restore metadata to file system
+	--save|s     Save metadata to file
 	--verbose|v  Print verbose messages
 	--version    Display version information
 ";
@@ -125,10 +125,11 @@ sub set_defaults {
 	$file_metadata_ref->{config}{program} = 'metastore';
 	$file_metadata_ref->{config}{storage_version} = 0;
 	$file_metadata_ref->{config}{strict_json} = 0;
-	#TODO 'used metadata'
-	$file_metadata_ref->{config}{tracked_metadata}{ctime} = 0;
-	$file_metadata_ref->{config}{tracked_metadata}{atime} = 1;
-	$file_metadata_ref->{config}{tracked_metadata}{mtime} = 0;
+	#TODO 'tracked_metadata' should reflect what we will store by default
+	$file_metadata_ref->{config}{tracked_metadata}{uid} = 0;
+	$file_metadata_ref->{config}{tracked_metadata}{gid} = 0;
+	$file_metadata_ref->{config}{tracked_metadata}{atime} = 0;
+	$file_metadata_ref->{config}{tracked_metadata}{mtime} = 1;
 	$file_metadata_ref->{config}{tracked_metadata}{mode} = 0;
 	return $file_metadata_ref;
 }
@@ -156,7 +157,7 @@ sub write_metadata_to_storage {
 	print $storage_fh $json;
 	close $storage_fh;
 
-	print $json;
+	log_trace{"metadata stored in '$STORAGE':\n".$json};
 }
 
 sub main {
@@ -172,9 +173,11 @@ sub main {
 	my @matches;
 	if (@ARGV) {
 		@matches = map glob($_), @ARGV;
-		log_error { "$0: no matches found: '@ARGV'"} unless grep -e $_, @matches;
+		log_error { "$0: no matches found for '@ARGV'"} unless grep -e $_, @matches;
 	} else {
-		@matches = ('.');
+		# Default to '*' if we don't have any files to operate one.
+		# Using '.' here would pull in dotfiles via list_dir()
+		@matches = map glob($_), '*';
 	}
 	log_trace { "globbing matches:\n" . Dumper @matches };
 
