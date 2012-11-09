@@ -13,7 +13,6 @@ use Log::Contextual::SimpleLogger;
 use Log::Log4perl ':easy';
 use PadWalker qw/peek_my/;
 use Shell::Command;
-use Text::CSV_XS;
 
 # global variables
 my $VERSION = '0.20120327';
