@@ -93,7 +93,7 @@ sub get_file_metadata_from_fs {
 		 undef,                          # total size
 		 $file_metadata_ref->{metadata}{$file}{atime},
 		 $file_metadata_ref->{metadata}{$file}{mtime},
-		 $file_metadata_ref->{metadata}{$file}{ctime},
+		 undef,                          # ctime; can not be set on Unix
 		 undef,                          # preferred block size
 		 undef,                          # blocks allocated
 		) = lstat($file) or log_fatal {"Could not stat '$file': $!"};
@@ -131,7 +131,6 @@ sub set_defaults {
 	$file_metadata_ref->{config}{tracked_metadata}{gid} = 0;
 	$file_metadata_ref->{config}{tracked_metadata}{atime} = 0;
 	$file_metadata_ref->{config}{tracked_metadata}{mtime} = 1;
-	$file_metadata_ref->{config}{tracked_metadata}{ctime} = 1;
 	$file_metadata_ref->{config}{tracked_metadata}{mode} = 0;
 	return $file_metadata_ref;
 }
