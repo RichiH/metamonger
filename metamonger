@@ -6,7 +6,8 @@ use warnings;
 use Data::Dumper;
 use File::Util;
 use Getopt::Long qw/:config gnu_getopt no_auto_abbrev/;
-use Hash::Merge::Simple qw/ merge /;
+use Hash::Diff qw/diff/;
+use Hash::Merge::Simple qw/merge/;
 use JSON;
 use Log::Contextual qw/:log :dlog set_logger with_logger/;
 use Log::Contextual::SimpleLogger;
@@ -55,6 +56,13 @@ if ($debug) {
 my $logger = Log::Log4perl->get_logger;
 set_logger $logger;
 
+
+sub diff_hashes {
+	my ($fs_ref, $file_metadata_ref) = @_;
+	my %diff_hash = %{ diff( $fs_ref, $file_metadata_ref ) };
+	for my $hkey (keys %diff_hash) {
+	}
+}
 
 sub get_metadata_from_storage {
 	my ($file_metadata_ref) = @_;
@@ -139,6 +147,22 @@ sub version {
 	exit;
 }
 
+sub write_metadata_to_fs {
+	my ($metadata_fs_ref, $file_metadata_ref) = @_;
+	log_trace { '%file_metadata: ' . Dumper $file_metadata_ref };
+	#TODO better names
+	delete $file_metadata_ref->{'config'};
+	diff_hashes($metadata_fs_ref, $file_metadata_ref);
+
+
+
+	# TODO utimes for ?time
+	# TODO chown for ?id
+	# TODO chmod for ?mode
+	#      read as integer, not string
+	#      check if we are root and error out if we are not
+}
+
 sub write_metadata_to_storage {
 	my ($file_metadata_ref) = @_;
 	my $json = to_json($file_metadata_ref, {canonical => 1, utf8 => 1});
@@ -207,7 +231,10 @@ sub main {
 		write_metadata_to_storage($file_metadata_ref);
 	} elsif (!$diff &&  $restore && !$save) {
 		# restore data from file to live
-		#TODO
+		my %metadata_fs;
+		my $metadata_fs_ref = \%metadata_fs;
+		$metadata_fs_ref = get_file_metadata_from_fs(\@files, $metadata_fs_ref);
+		write_metadata_to_fs($metadata_fs_ref, $file_metadata_ref);
 	} elsif ( $diff && !$restore && !$save) {
 		# diff file against live data
 		#TODO
