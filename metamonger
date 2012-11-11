@@ -31,15 +31,15 @@ my $verbose = '';
 my $version = '';
 
 GetOptions (
-            'debug+'     => \$debug,
-            'diff|d+'    => \$diff,
-            'file|f=s'   => \$file,
-            'help|h+'    => \$help,
-            'pretend|p+' => \$pretend,
-            'restore|r+' => \$restore,
-            'save|s+'    => \$save,
-            'verbose|v+' => \$verbose,
-            'version+'   => \$version,
+            'debug'     => \$debug,
+            'diff|d'    => \$diff,
+            'file|f=s'  => \$file,
+            'help|h'    => \$help,
+            'pretend|p' => \$pretend,
+            'restore|r' => \$restore,
+            'save|s'    => \$save,
+            'verbose|v' => \$verbose,
+            'version'   => \$version,
 ) || help(1);
 
 $pretend=1;
