@@ -20,34 +20,34 @@ my $STORAGE_VERSION = '0';
 my $STORAGE = '.metamonger';
 
 # Getopt::Long
-my $debug   = '';
-my $diff    = '';
-my $file    = '';
-my $help    = '';
-my $no_act  = '';
-my $restore = '';
-my $save    = '';
-my $verbose = '';
-my $version = '';
+my $opt_debug   = '';
+my $opt_diff    = '';
+my $opt_file    = '';
+my $opt_help    = '';
+my $opt_no_act  = '';
+my $opt_restore = '';
+my $opt_save    = '';
+my $opt_verbose = '';
+my $opt_version = '';
 
 GetOptions (
-            'debug'     => \$debug,
-            'diff|d'    => \$diff,
-            'file|f=s'  => \$file,
-            'help|h'    => \$help,
-            'no-act|n'  => \$no_act,
-            'restore|r' => \$restore,
-            'save|s'    => \$save,
-            'verbose|v' => \$verbose,
-            'version'   => \$version,
+            'debug'     => \$opt_debug,
+            'diff|d'    => \$opt_diff,
+            'file|f=s'  => \$opt_file,
+            'help|h'    => \$opt_help,
+            'no-act|n'  => \$opt_no_act,
+            'restore|r' => \$opt_restore,
+            'save|s'    => \$opt_save,
+            'verbose|v' => \$opt_verbose,
+            'version'   => \$opt_version,
 ) || help(1);
 
 $pretend=1;
 
 # Set verbosity level and set up logger
-if ($debug) {
+if ($opt_debug) {
 	Log::Log4perl->easy_init($TRACE);
-} elsif ($verbose) {
+} elsif ($opt_verbose) {
 	Log::Log4perl->easy_init($DEBUG);
 } else {
 	Log::Log4perl->easy_init($INFO);
@@ -163,9 +163,9 @@ sub write_metadata_to_storage {
 sub main {
 
 	# Avoid doing extra work if we are running cheap code
-	if ($help) {
+	if ($opt_help) {
 		help(0);
-	} elsif ($version) {
+	} elsif ($opt_version) {
 		version;
 	}
 
@@ -201,14 +201,14 @@ sub main {
 
 	$file_metadata_ref = get_metadata_from_storage($file_metadata_ref);
 
-	if      (!$diff && !$restore &&  $save) {
+	if      (!$opt_diff && !$opt_restore &&  $opt_save) {
 		# save live data to file
 		$file_metadata_ref = get_file_metadata_from_fs(\@files, $file_metadata_ref);
 		write_metadata_to_storage($file_metadata_ref);
-	} elsif (!$diff &&  $restore && !$save) {
+	} elsif (!$opt_diff &&  $opt_restore && !$opt_save) {
 		# restore data from file to live
 		#TODO
-	} elsif ( $diff && !$restore && !$save) {
+	} elsif ( $opt_diff && !$opt_restore && !$opt_save) {
 		# diff file against live data
 		#TODO
 	} else {
