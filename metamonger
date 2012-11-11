@@ -24,7 +24,7 @@ my $debug   = '';
 my $diff    = '';
 my $file    = '';
 my $help    = '';
-my $pretend = '';
+my $no_act  = '';
 my $restore = '';
 my $save    = '';
 my $verbose = '';
@@ -35,7 +35,7 @@ GetOptions (
             'diff|d'    => \$diff,
             'file|f=s'  => \$file,
             'help|h'    => \$help,
-            'pretend|p' => \$pretend,
+            'no-act|n'  => \$no_act,
             'restore|r' => \$restore,
             'save|s'    => \$save,
             'verbose|v' => \$verbose,
