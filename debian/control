@@ -1,1 +1,1 @@
-Depends: ${misc:Depends}, ${perl:Depends}, libfile-util-perl, libhash-merge-simple-perl, libjson-perl, liblog-contextual-perl, liblog-log4perl-perl, libpadwalker-perl, libshell-command-perl
+Depends: ${misc:Depends}, ${perl:Depends}, libfile-util-perl, libhash-perl, libhash-merge-simple-perl, libjson-perl, liblog-contextual-perl, liblog-log4perl-perl, libpadwalker-perl, libshell-command-perl
