@@ -20,6 +20,12 @@ my $VERSION = '0.20120327';
 my $STORAGE_VERSION = '0';
 my $STORAGE = '.metamonger';
 
+# Allowed function references; required by `use strict`
+my %DIFF_ACTIONS = (
+	'print_metadata'       => \&print_metadata,
+	'set_metadata_on_file' => \&set_metadata_on_file,
+);
+
 # Getopt::Long
 my $debug   = '';
 my $diff    = '';
@@ -58,7 +64,7 @@ set_logger $logger;
 
 
 sub diff_hashes {
-	my ($fs_ref, $file_metadata_ref) = @_;
+	my ($fs_ref, $file_metadata_ref, $execute_sub) = @_;
 	my %diff_hash = %{ diff( $fs_ref, $file_metadata_ref ) };
 	for my $hkey (keys %diff_hash) {
 	}
@@ -151,9 +157,9 @@ sub write_metadata_to_fs {
 	my ($metadata_fs_ref, $file_metadata_ref) = @_;
 	log_trace { '%file_metadata: ' . Dumper $file_metadata_ref };
 	#TODO better names
-	diff_hashes($metadata_fs_ref, $file_metadata_ref);
 	my %file_metadata_config;
 	$file_metadata_config{'config'} = delete $file_metadata_ref->{'config'};
+	diff_hashes($metadata_fs_ref, $file_metadata_ref, $DIFF_ACTIONS{'set_metadata_on_file'});
 
 
 
