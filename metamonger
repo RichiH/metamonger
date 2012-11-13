@@ -151,8 +151,9 @@ sub write_metadata_to_fs {
 	my ($metadata_fs_ref, $file_metadata_ref) = @_;
 	log_trace { '%file_metadata: ' . Dumper $file_metadata_ref };
 	#TODO better names
-	delete $file_metadata_ref->{'config'};
 	diff_hashes($metadata_fs_ref, $file_metadata_ref);
+	my %file_metadata_config;
+	$file_metadata_config{'config'} = delete $file_metadata_ref->{'config'};
 
 
 
