@@ -66,7 +66,12 @@ set_logger $logger;
 sub diff_hashes {
 	my ($fs_ref, $file_metadata_ref, $execute_sub) = @_;
 	my %diff_hash = %{ diff( $fs_ref, $file_metadata_ref ) };
-	for my $hkey (keys %diff_hash) {
+	for my $file_name (keys $diff_hash{'metadata'}) {
+		next unless defined $diff_hash{'metadata'}{$file_name};
+		for my $metadata_name (keys $diff_hash{'metadata'}{$file_name}) {
+			log_trace { "file: '$file_name' - metadata: '$metadata_name' - value: '$diff_hash{'metadata'}{$file_name}{$metadata_name}'" };
+			&$execute_sub($file_name, $metadata_name, $diff_hash{'metadata'}{$file_name}{$metadata_name});
+		}
 	}
 }
 
