@@ -33,7 +33,7 @@ my $file    = '';
 my $help    = '';
 my $pretend = '';
 my $restore = '';
-my $save    = '';
+my $write   = '';
 my $verbose = '';
 my $version = '';
 
@@ -44,7 +44,7 @@ GetOptions (
             'help|h+'    => \$help,
             'pretend|p+' => \$pretend,
             'restore|r+' => \$restore,
-            'save|s+'    => \$save,
+            'write|w+'   => \$write,
             'verbose|v+' => \$verbose,
             'version+'   => \$version,
 ) || help(1);
@@ -132,7 +132,7 @@ sub help {
 	--help|h     Display this help
 	--pretend|p  Pretend to do something; print results only
 	--restore|r  Restore metadata to file system
-	--save|s     Save metadata to file
+	--write|s    Write metadata to file
 	--verbose|v  Print verbose messages
 	--version    Display version information
 ";
@@ -237,17 +237,17 @@ sub main {
 
 	$file_metadata_ref = get_metadata_from_storage($file_metadata_ref);
 
-	if      (!$diff && !$restore &&  $save) {
-		# save live data to file
+	if      (!$diff && !$restore &&  $write) {
+		# write live data to file
 		$file_metadata_ref = get_file_metadata_from_fs(\@files, $file_metadata_ref);
 		write_metadata_to_storage($file_metadata_ref);
-	} elsif (!$diff &&  $restore && !$save) {
+	} elsif (!$diff &&  $restore && !$write) {
 		# restore data from file to live
 		my %metadata_fs;
 		my $metadata_fs_ref = \%metadata_fs;
 		$metadata_fs_ref = get_file_metadata_from_fs(\@files, $metadata_fs_ref);
 		write_metadata_to_fs($metadata_fs_ref, $file_metadata_ref);
-	} elsif ( $diff && !$restore && !$save) {
+	} elsif ( $diff && !$restore && !$write) {
 		# diff file against live data
 		#TODO
 	} else {
