@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+use v5.10;
 
 use Data::Dumper;
 use File::Util;
@@ -151,6 +152,14 @@ sub set_defaults {
 	$file_metadata_ref->{config}{tracked_metadata}{mtime} = 1;
 	$file_metadata_ref->{config}{tracked_metadata}{mode} = 0;
 	return $file_metadata_ref;
+}
+
+sub set_metadata_on_file {
+	my ($file_name, $metadata_name, $metadata_value) = @_;
+	given($metadata_name) {
+		when(/^atime$/) {utime($metadata_value, -1, $file_name) or warn "$0: couldn't set atime $!";}
+		when(/^mtime$/) {utime(-1, $metadata_value, $file_name) or warn "$0: couldn't set mtime $!";}
+	}
 }
 
 sub version {
