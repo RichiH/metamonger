@@ -42,8 +42,6 @@ GetOptions (
             'version'   => \$opt_version,
 ) || help(1);
 
-$pretend=1;
-
 # Set verbosity level and set up logger
 if ($opt_debug) {
 	Log::Log4perl->easy_init($TRACE);
