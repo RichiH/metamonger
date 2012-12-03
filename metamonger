@@ -109,7 +109,7 @@ sub help {
 	--diff|d     Diff between stored and live metadata
 	--file|f     Specify storage file
 	--help|h     Display this help
-	--pretend|p  Pretend to do something; print results only
+	--no-act|n   Do not act; print results only
 	--restore|r  Restore metadata to file system
 	--save|s     Save metadata to file
 	--verbose|v  Print verbose messages
