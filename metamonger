@@ -11,6 +11,7 @@ use JSON;
 use Log::Contextual qw/:log :dlog set_logger with_logger/;
 use Log::Contextual::SimpleLogger;
 use Log::Log4perl ':easy';
+use Log::Log4perl::Level;
 use PadWalker qw/peek_my/;
 use Shell::Command;
 
@@ -42,16 +43,23 @@ GetOptions (
             'version'   => \$opt_version,
 ) || help(1);
 
-# Set verbosity level and set up logger
-if ($opt_debug) {
-	Log::Log4perl->easy_init($TRACE);
-} elsif ($opt_verbose) {
-	Log::Log4perl->easy_init($DEBUG);
-} else {
-	Log::Log4perl->easy_init($INFO);
-}
-my $logger = Log::Log4perl->get_logger;
-set_logger $logger;
+# Create custom log level 'VERBOSE'
+print Dumper peek_my(0) ;
+Log::Log4perl::Logger::create_custom_level('VERBOSE', 'INFO');
+print Dumper peek_my(0) ;
+## Set verbosity level and set up logger
+#if ($opt_trace) {
+#	Log::Log4perl->easy_init($TRACE);
+#} elsif ($opt_debug) {
+#	Log::Log4perl->easy_init($DEBUG);
+#} elsif ($opt_verbose) {
+#	Log::Log4perl->easy_init($VERBOSE_INT);
+#} else {
+#	Log::Log4perl->easy_init($INFO);
+#}
+exit;
+#my $logger = Log::Log4perl->get_logger;
+#set_logger $logger;
 
 
 sub get_metadata_from_storage {
