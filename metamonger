@@ -127,7 +127,6 @@ sub set_defaults {
 	$file_metadata_ref->{config}{program} = 'metastore';
 	$file_metadata_ref->{config}{storage_version} = 0;
 	$file_metadata_ref->{config}{strict_json} = 1;
-	#TODO 'tracked_metadata' should reflect what we will store by default
 	$file_metadata_ref->{config}{tracked_metadata}{uid} = 0;
 	$file_metadata_ref->{config}{tracked_metadata}{gid} = 0;
 	$file_metadata_ref->{config}{tracked_metadata}{atime} = 0;
