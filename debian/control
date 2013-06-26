@@ -1,1 +1,25 @@
-Depends: ${misc:Depends}, ${perl:Depends}, libfile-util-perl, libhash-perl, libhash-merge-simple-perl, libjson-perl, liblog-contextual-perl, liblog-log4perl-perl, libpadwalker-perl, libshell-command-perl
+Source: metamonger
+Maintainer: Richard Hartmann <richih.mailinglist@gmail.com>
+Section: misc
+Priority: optional
+Standards-Version: 3.9.4
+Vcs-Git: git://github.com/RichiH/metamonger.git
+Vcs-Browser: https://github.com/RichiH/metamonger
+
+Package: vcsh
+Architecture: all
+Depends: ${misc:Depends},
+         ${perl:Depends},
+         libfile-util-perl,
+         libhash-merge-simple-perl,
+         libhash-perl,
+         libjson-perl,
+         liblog-contextual-perl,
+         liblog-log4perl-perl,
+         libpadwalker-perl,
+         libshell-command-perl
+Description: metamonger - Store, restore, and diff metadata
+ metamonger allows you to store, restore, and diff file metadata like mtime,
+ atime, uid, gid, etc. The storage backend is line-wise JSON; this makes it
+ easy to both commit, track, and merge the data with a VCS like Git as well
+ as edit the stored data by hand.
