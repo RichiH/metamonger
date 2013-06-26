@@ -94,6 +94,9 @@ sub get_file_metadata_from_fs {
 		 undef,                          # preferred block size
 		 undef,                          # blocks allocated
 		) = lstat($file) or log_fatal {"Could not stat '$file': $!"};
+		for my $metadata_type (keys $file_metadata_ref->{config}{tracked_metadata}) {
+			delete $file_metadata_ref->{metadata}{$file}{$metadata_type} unless $file_metadata_ref->{config}{tracked_metadata}{$metadata_type};
+		}
 	}
 	log_trace { '%file_metadata: ' . Dumper $file_metadata_ref };
 	return $file_metadata_ref;
