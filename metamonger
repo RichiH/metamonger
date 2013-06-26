@@ -62,7 +62,7 @@ sub get_metadata_from_storage {
 		die;
 	};
 
-	# Don't read file as JSON, merge, or check storage version if the file is empty
+	# Stop here if the read file if empty to avoid useless errors
 	unless (eof $storage_fh) {
 		# Merge new data into existing hashref
 		# relaxed mode allows us to read the trailing comma
@@ -194,7 +194,6 @@ sub main {
 	my %file_metadata;
 	my $file_metadata_ref = \%file_metadata;
 
-	#TODO set defaults
 	$file_metadata_ref = set_defaults($file_metadata_ref);
 	#TODO read global config
 	#TODO read user config
