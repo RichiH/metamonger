@@ -1,0 +1,4 @@
+2013-06-27  Richard Hartmann <richih.mailinglist@gmail.com>
+
+	* Initial release
+	* Only stores metadata to disk in this release
