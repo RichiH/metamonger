@@ -15,39 +15,37 @@ use PadWalker qw/peek_my/;
 use Shell::Command;
 
 # global variables
-my $VERSION = '0.20120327';
+my $VERSION = '0.20130627';
 my $STORAGE_VERSION = '0';
 my $STORAGE = '.metamonger';
 
 # Getopt::Long
-my $debug   = '';
-my $diff    = '';
-my $file    = '';
-my $help    = '';
-my $pretend = '';
-my $restore = '';
-my $save    = '';
-my $verbose = '';
-my $version = '';
+my $opt_debug   = '';
+my $opt_diff    = '';
+my $opt_file    = '';
+my $opt_help    = '';
+my $opt_no_act  = '';
+my $opt_restore = '';
+my $opt_save    = '';
+my $opt_verbose = '';
+my $opt_version = '';
 
 GetOptions (
-            'debug+'     => \$debug,
-            'diff|d+'    => \$diff,
-            'file|f=s'   => \$file,
-            'help|h+'    => \$help,
-            'pretend|p+' => \$pretend,
-            'restore|r+' => \$restore,
-            'save|s+'    => \$save,
-            'verbose|v+' => \$verbose,
-            'version+'   => \$version,
+	'debug'     => \$opt_debug,
+	'diff|d'    => \$opt_diff,
+	'file|f=s'  => \$opt_file,
+	'help|h'    => \$opt_help,
+	'no-act|n'  => \$opt_no_act,
+	'restore|r' => \$opt_restore,
+	'save|s'    => \$opt_save,
+	'verbose|v' => \$opt_verbose,
+	'version'   => \$opt_version,
 ) || help(1);
 
-$pretend=1;
-
 # Set verbosity level and set up logger
-if ($debug) {
+if ($opt_debug) {
 	Log::Log4perl->easy_init($TRACE);
-} elsif ($verbose) {
+} elsif ($opt_verbose) {
 	Log::Log4perl->easy_init($DEBUG);
 } else {
 	Log::Log4perl->easy_init($INFO);
@@ -64,7 +62,7 @@ sub get_metadata_from_storage {
 		die;
 	};
 
-	# Don't read file as JSON, merge, or check storage version if the file is empty
+	# Stop here if the read file if empty to avoid useless errors
 	unless (eof $storage_fh) {
 		# Merge new data into existing hashref
 		# relaxed mode allows us to read the trailing comma
@@ -81,7 +79,6 @@ sub get_metadata_from_storage {
 sub get_file_metadata_from_fs {
 	my ($files_ref, $file_metadata_ref) = @_;
 	foreach my $file (@$files_ref) {
-		# TODO allow user to store specific metadata, only
 		(undef,                          # device number
 		 undef,                          # inode number
 		 $file_metadata_ref->{metadata}{$file}{mode},
@@ -96,6 +93,11 @@ sub get_file_metadata_from_fs {
 		 undef,                          # preferred block size
 		 undef,                          # blocks allocated
 		) = lstat($file) or log_fatal {"Could not stat '$file': $!"};
+
+		# Don't store metadata types unless told to
+		for my $metadata_type (keys $file_metadata_ref->{config}{tracked_metadata}) {
+			delete $file_metadata_ref->{metadata}{$file}{$metadata_type} unless $file_metadata_ref->{config}{tracked_metadata}{$metadata_type};
+		}
 	}
 	log_trace { '%file_metadata: ' . Dumper $file_metadata_ref };
 	return $file_metadata_ref;
@@ -111,7 +113,7 @@ sub help {
 	--diff|d     Diff between stored and live metadata
 	--file|f     Specify storage file
 	--help|h     Display this help
-	--pretend|p  Pretend to do something; print results only
+	--no-act|n   Do not act; print results only
 	--restore|r  Restore metadata to file system
 	--save|s     Save metadata to file
 	--verbose|v  Print verbose messages
@@ -124,8 +126,7 @@ sub set_defaults {
 	my ($file_metadata_ref) = @_;
 	$file_metadata_ref->{config}{program} = 'metastore';
 	$file_metadata_ref->{config}{storage_version} = 0;
-	$file_metadata_ref->{config}{strict_json} = 0;
-	#TODO 'tracked_metadata' should reflect what we will store by default
+	$file_metadata_ref->{config}{strict_json} = 1;
 	$file_metadata_ref->{config}{tracked_metadata}{uid} = 0;
 	$file_metadata_ref->{config}{tracked_metadata}{gid} = 0;
 	$file_metadata_ref->{config}{tracked_metadata}{atime} = 0;
@@ -163,9 +164,9 @@ sub write_metadata_to_storage {
 sub main {
 
 	# Avoid doing extra work if we are running cheap code
-	if ($help) {
+	if ($opt_help) {
 		help(0);
-	} elsif ($version) {
+	} elsif ($opt_version) {
 		version;
 	}
 
@@ -193,7 +194,6 @@ sub main {
 	my %file_metadata;
 	my $file_metadata_ref = \%file_metadata;
 
-	#TODO set defaults
 	$file_metadata_ref = set_defaults($file_metadata_ref);
 	#TODO read global config
 	#TODO read user config
@@ -201,14 +201,14 @@ sub main {
 
 	$file_metadata_ref = get_metadata_from_storage($file_metadata_ref);
 
-	if      (!$diff && !$restore &&  $save) {
+	if      (!$opt_diff && !$opt_restore &&  $opt_save) {
 		# save live data to file
 		$file_metadata_ref = get_file_metadata_from_fs(\@files, $file_metadata_ref);
 		write_metadata_to_storage($file_metadata_ref);
-	} elsif (!$diff &&  $restore && !$save) {
+	} elsif (!$opt_diff &&  $opt_restore && !$opt_save) {
 		# restore data from file to live
 		#TODO
-	} elsif ( $diff && !$restore && !$save) {
+	} elsif ( $opt_diff && !$opt_restore && !$opt_save) {
 		# diff file against live data
 		#TODO
 	} else {
