@@ -16,7 +16,8 @@ Depends: ${misc:Depends},
          liblog-contextual-perl,
          liblog-log4perl-perl,
          libpadwalker-perl,
-         libshell-command-perl
+         libshell-command-perl,
+         libutf8-all-perl
 Description: metamonger - Store, restore, and diff filesystem metadata
  metamonger allows you to store, restore, and diff filesystem metadata like
  mtime, atime, uid, gid, etc. The storage backend is line-wise JSON; this makes
