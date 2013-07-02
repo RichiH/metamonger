@@ -13,6 +13,7 @@ use Log::Contextual::SimpleLogger;
 use Log::Log4perl ':easy';
 use PadWalker qw/peek_my/;
 use Shell::Command;
+use utf8::all;
 
 # global variables
 my $VERSION = '0.20130627';
