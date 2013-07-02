@@ -125,7 +125,7 @@ sub help {
 
 sub set_defaults {
 	my ($file_metadata_ref) = @_;
-	$file_metadata_ref->{config}{program} = 'metastore';
+	$file_metadata_ref->{config}{program} = 'metamonger';
 	$file_metadata_ref->{config}{storage_version} = 0;
 	$file_metadata_ref->{config}{strict_json} = 1;
 	$file_metadata_ref->{config}{tracked_metadata}{uid} = 0;
