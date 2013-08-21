@@ -66,14 +66,12 @@ set_logger $logger;
 
 sub diff_hashes {
 	my ($fs_ref, $file_metadata_ref, $execute_sub) = @_;
-	my %diff_hash = %{ diff( $fs_ref, $file_metadata_ref ) };
+	my %diff_hash = %{ diff( $file_metadata_ref, $fs_ref ) };
 	for my $file_name (keys $diff_hash{'metadata'}) {
 		next unless defined $diff_hash{'metadata'}{$file_name};
-		for my $metadata_name (keys $diff_hash{'metadata'}{$file_name}) {
-			log_trace { "file: '$file_name' - metadata: '$metadata_name' - value: '$diff_hash{'metadata'}{$file_name}{$metadata_name}'" };
-			&$execute_sub($file_name, $metadata_name, $diff_hash{'metadata'}{$file_name}{$metadata_name});
-		}
-	}
+
+        &$execute_sub($file_name, \%{$fs_ref->{'metadata'}{$file_name}}, \%{$file_metadata_ref->{'metadata'}{$file_name}}, \%{$diff_hash{'metadata'}{$file_name}});
+    }
 }
 
 sub get_metadata_from_storage {
@@ -155,11 +153,29 @@ sub set_defaults {
 }
 
 sub set_metadata_on_file {
-	my ($file_name, $metadata_name, $metadata_value) = @_;
-	given($metadata_name) {
-		when(/^atime$/) {utime($metadata_value, -1, $file_name) or warn "$0: couldn't set atime $!";}
-		when(/^mtime$/) {utime(-1, $metadata_value, $file_name) or warn "$0: couldn't set mtime $!";}
-	}
+	my ($file_name, $fs_ref, $file_metadata_ref, $diff_ref) = @_;
+    my $written_atime = 0;
+    my $written_mtime = 0;
+
+    for my $metadata_name (keys $diff_ref) {
+        my $metadata_value = $diff_ref->{$metadata_name};
+
+        if ($metadata_name eq 'mtime' && !$written_atime) {
+            my $atime = $diff_ref->{'atime'} || $file_metadata_ref->{'atime'} || $fs_ref->{'atime'} || -1;
+            print 'having mtime- atime is: ' . $atime . "\n" ;
+
+            utime($atime, $metadata_value, $file_name) or warn "$0: couldn't set atime $!";
+            $written_mtime = 1;
+        }
+
+        if ($metadata_name eq 'atime' && !$written_mtime) {
+            my $mtime = $diff_ref->{'mtime'} || $file_metadata_ref->{'mtime'} || $fs_ref->{'mtime'} || -1;
+            print 'having atime - mtime is: ' . $mtime ;
+
+            utime($metadata_value, $mtime, $file_name) or warn "$0: couldn't set atime $!";
+            $written_atime = 1;
+        }
+    }
 }
 
 sub version {
