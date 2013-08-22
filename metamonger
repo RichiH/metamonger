@@ -95,6 +95,8 @@ sub get_file_metadata_from_fs {
 		 undef,                          # blocks allocated
 		) = lstat($file) or log_fatal {"Could not stat '$file': $!"};
 
+        $file_metadata_ref->{metadata}{$file}{mode} = sprintf ("%04o", $file_metadata_ref->{metadata}{$file}{mode} & 07777);
+
 		# Don't store metadata types unless told to
 		for my $metadata_type (keys $file_metadata_ref->{config}{tracked_metadata}) {
 			delete $file_metadata_ref->{metadata}{$file}{$metadata_type} unless $file_metadata_ref->{config}{tracked_metadata}{$metadata_type};
