@@ -21,6 +21,8 @@ requires 'PadWalker';
 requires 'Shell::Command';
 requires 'utf8::all';
 
+test_requires 'Test::Most';
+
 install_script 'metamonger';
 auto_install;
 WriteAll;
