@@ -13,6 +13,7 @@ use Log::Contextual::SimpleLogger;
 use Log::Log4perl ':easy';
 use PadWalker qw/peek_my/;
 use Shell::Command;
+use utf8::all;
 
 # global variables
 my $VERSION = '0.20130627';
@@ -94,6 +95,8 @@ sub get_file_metadata_from_fs {
 		 undef,                          # blocks allocated
 		) = lstat($file) or log_fatal {"Could not stat '$file': $!"};
 
+        $file_metadata_ref->{metadata}{$file}{mode} = sprintf ("%04o", $file_metadata_ref->{metadata}{$file}{mode} & 07777);
+
 		# Don't store metadata types unless told to
 		for my $metadata_type (keys $file_metadata_ref->{config}{tracked_metadata}) {
 			delete $file_metadata_ref->{metadata}{$file}{$metadata_type} unless $file_metadata_ref->{config}{tracked_metadata}{$metadata_type};
@@ -124,7 +127,7 @@ sub help {
 
 sub set_defaults {
 	my ($file_metadata_ref) = @_;
-	$file_metadata_ref->{config}{program} = 'metastore';
+	$file_metadata_ref->{config}{program} = 'metamonger';
 	$file_metadata_ref->{config}{storage_version} = 0;
 	$file_metadata_ref->{config}{strict_json} = 1;
 	$file_metadata_ref->{config}{tracked_metadata}{uid} = 0;
