@@ -15,6 +15,7 @@ Build-Depends: debhelper (>= 7),
                libtest-most-perl,
 Vcs-Git: git://github.com/RichiH/metamonger.git
 Vcs-Browser: https://github.com/RichiH/metamonger
+Homepage: https://github.com/RichiH/metamonger
 
 Package: metamonger
 Architecture: all
