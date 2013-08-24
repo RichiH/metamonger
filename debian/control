@@ -16,7 +16,7 @@ Build-Depends: debhelper (>= 7),
 Vcs-Git: git://github.com/RichiH/metamonger.git
 Vcs-Browser: https://github.com/RichiH/metamonger
 
-Package: vcsh
+Package: metamonger
 Architecture: all
 Depends: ${misc:Depends},
          ${perl:Depends},
@@ -28,7 +28,6 @@ Depends: ${misc:Depends},
          libpadwalker-perl,
          libshell-command-perl,
          libtest-most-perl,
-         libutf8-all-perl,
 Description: metamonger - Store, restore, and diff filesystem metadata
  metamonger allows you to store, restore, and diff filesystem metadata like
  mtime, atime, uid, gid, etc. The storage backend is line-wise JSON; this makes
