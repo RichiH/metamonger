@@ -19,7 +19,7 @@ chdir 't/etc/' or die $!;
 my $STORAGE = '.metamonger';
 
 open (FILE, ">$STORAGE") or die $?;
-print FILE '{"config":{"program":"metamonger","storage_version":0,"strict_json":1,"tracked_metadata":{"atime":1,"gid":0,"mode":1,"mtime":1,"uid":0}}}';
+print FILE '{"config":{"program":"metamonger","storage_version":0,"strict_json":1,"tracked_metadata":{"atime":1,"gid":0,"mode":2,"mtime":1,"uid":0}}}';
 close FILE;
 
 if (!-e 'metamonger') {
@@ -31,37 +31,29 @@ eval {
     touch '001';
     touch '002';
     touch '003';
-    touch '004';
 };
 die $@ if $@;
 
 utime 1337, 42, '001';
-chmod (775, '001');
 
 utime -1, 9001, '002';
 utime 9002, -1, '003';
 
-chmod (666, '004');
-
-system ('./metamonger --save 001 002 003 004');
+system ('./metamonger --save 001 002 003');
 die $? if $?;
 
 eval {
     touch '001';
     touch '002';
     touch '003';
-    touch '004';
 };
 die $@ if $@;
-
-chmod (777, '001');
-chmod (777, '004');
 
 system ('./metamonger --restore');
 
 my (undef,                          # device number
  undef,                          # inode number
- $mode_1,
+ undef,
  undef,                          # number of (hard) links
  undef,
  undef,
@@ -74,9 +66,6 @@ my (undef,                          # device number
  undef,                          # blocks allocated
 ) = lstat('001') or log_fatal {"Could not stat '001': $!"};
 
-$mode_1 = sprintf ("%04o", $mode_1 & 07777);
-
-ok $mode_1 eq '775';
 ok $atime_1 == 1337;
 ok $mtime_1 == 42;
 
@@ -113,24 +102,5 @@ my (undef,                          # device number
 ) = lstat('003') or log_fatal {"Could not stat '003': $!"};
 
 ok $atime_3 = 9002;
-
-my (undef,                          # device number
- undef,                          # inode number
- $mode_4,
- undef,                          # number of (hard) links
- undef,
- undef,
- undef,                          # device identifier
- undef,                          # total size
- undef,
- undef,
- undef,                          # ctime; can not be set on Unix
- undef,                          # preferred block size
- undef,                          # blocks allocated
-) = lstat('004') or log_fatal {"Could not stat '004': $!"};
-
-$mode_1 = sprintf ("%04o", $mode_4 & 07777);
-
-ok $mode_1 eq '666';
 
 done_testing;

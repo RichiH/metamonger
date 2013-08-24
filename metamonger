@@ -69,7 +69,7 @@ sub diff_hashes {
 	for my $file_name (keys $diff_hash{'metadata'}) {
 		next unless defined $diff_hash{'metadata'}{$file_name};
 
-        &$execute_sub($file_name, \%{$fs_ref->{'metadata'}{$file_name}}, \%{$file_metadata_ref->{'metadata'}{$file_name}}, \%{$diff_hash{'metadata'}{$file_name}});
+		&$execute_sub($file_name, \%{$fs_ref->{'metadata'}{$file_name}}, \%{$file_metadata_ref->{'metadata'}{$file_name}}, \%{$diff_hash{'metadata'}{$file_name}});
     }
 }
 
@@ -113,9 +113,13 @@ sub get_file_metadata_from_fs {
 		 undef,                          # blocks allocated
 		) = lstat($file) or log_fatal {"Could not stat '$file': $!"};
 
-        $file_metadata_ref->{metadata}{$file}{mode} = sprintf ("%04o", $file_metadata_ref->{metadata}{$file}{mode} & 07777);
+		$file_metadata_ref->{metadata}{$file}{mode} = sprintf ("%04o", $file_metadata_ref->{metadata}{$file}{mode} & 07777);
 
-		# Don't store metadata types unless told to
+		# Don't store metadata types unless told to,
+		# but if {config} isn't there skip this part and
+		# assume we want the full FS data.
+		next if (!$file_metadata_ref->{config});
+
 		for my $metadata_type (keys $file_metadata_ref->{config}{tracked_metadata}) {
 			delete $file_metadata_ref->{metadata}{$file}{$metadata_type} unless $file_metadata_ref->{config}{tracked_metadata}{$metadata_type};
 		}
@@ -158,28 +162,28 @@ sub set_defaults {
 
 sub set_metadata_on_file {
 	my ($file_name, $fs_ref, $file_metadata_ref, $diff_ref) = @_;
-    my $written_atime = 0;
-    my $written_mtime = 0;
+	my $written_atime = 0;
+	my $written_mtime = 0;
 
-    for my $metadata_name (keys $diff_ref) {
-        my $metadata_value = $diff_ref->{$metadata_name};
+	for my $metadata_name (keys $diff_ref) {
+		my $metadata_value = $diff_ref->{$metadata_name};
 
-        if ($metadata_name eq 'mtime' && !$written_atime) {
-            my $atime = $diff_ref->{'atime'} || $file_metadata_ref->{'atime'} || $fs_ref->{'atime'} || -1;
-            print 'having mtime- atime is: ' . $atime . "\n" ;
+		if ($metadata_name eq 'mtime' && !$written_atime) {
+			my $atime = $diff_ref->{'atime'} || $file_metadata_ref->{'atime'} || $fs_ref->{'atime'} || -1;
+			print 'having mtime- atime is: ' . $atime . "\n" ;
 
-            utime($atime, $metadata_value, $file_name) or warn "$0: couldn't set atime $!";
-            $written_mtime = 1;
-        }
+			utime($atime, $metadata_value, $file_name) or warn "$0: couldn't set atime $!";
+			$written_mtime = 1;
+		}
 
-        if ($metadata_name eq 'atime' && !$written_mtime) {
-            my $mtime = $diff_ref->{'mtime'} || $file_metadata_ref->{'mtime'} || $fs_ref->{'mtime'} || -1;
-            print 'having atime - mtime is: ' . $mtime ;
+		if ($metadata_name eq 'atime' && !$written_mtime) {
+			my $mtime = $diff_ref->{'mtime'} || $file_metadata_ref->{'mtime'} || $fs_ref->{'mtime'} || -1;
+			print 'having atime - mtime is: ' . $mtime ;
 
-            utime($metadata_value, $mtime, $file_name) or warn "$0: couldn't set atime $!";
-            $written_atime = 1;
-        }
-    }
+			utime($metadata_value, $mtime, $file_name) or warn "$0: couldn't set atime $!";
+			$written_atime = 1;
+		}
+	}
 }
 
 sub version {
