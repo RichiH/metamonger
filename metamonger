@@ -15,7 +15,6 @@ use Log::Contextual::SimpleLogger;
 use Log::Log4perl ':easy';
 use PadWalker qw/peek_my/;
 use Shell::Command;
-use utf8::all;
 
 # global variables
 my $VERSION = '0.20130627';
@@ -210,7 +209,7 @@ sub write_metadata_to_fs {
 
 sub write_metadata_to_storage {
 	my ($file_metadata_ref) = @_;
-	my $json = to_json($file_metadata_ref, {canonical => 1, utf8 => 1});
+	my $json = to_json($file_metadata_ref, {canonical => 1});
 	$json =~ s/"metadata":{/"metadata":{\n/;
 	$json =~ s/},/},\n/g;
 	if ($file_metadata_ref->{config}{strict_json} == 0) {
