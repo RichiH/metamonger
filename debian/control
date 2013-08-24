@@ -4,7 +4,15 @@ Section: misc
 Priority: optional
 Standards-Version: 3.9.4
 Build-Depends: debhelper (>= 7),
-               libmodule-install-perl
+               libfile-util-perl,
+               libhash-diff-perl,
+               libhash-merge-simple-perl,
+               liblog-contextual-perl,
+               liblog-log4perl-perl,
+               libpadwalker-perl,
+               libmodule-install-perl,
+               libshell-command-perl,
+               libtest-most-perl,
 Vcs-Git: git://github.com/RichiH/metamonger.git
 Vcs-Browser: https://github.com/RichiH/metamonger
 
@@ -20,7 +28,7 @@ Depends: ${misc:Depends},
          libpadwalker-perl,
          libshell-command-perl,
          libtest-most-perl,
-         libutf8-all-perl
+         libutf8-all-perl,
 Description: metamonger - Store, restore, and diff filesystem metadata
  metamonger allows you to store, restore, and diff filesystem metadata like
  mtime, atime, uid, gid, etc. The storage backend is line-wise JSON; this makes
