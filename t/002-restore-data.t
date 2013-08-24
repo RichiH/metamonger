@@ -103,4 +103,6 @@ my (undef,                          # device number
 
 ok $atime_3 = 9002;
 
+rm_rf '../etc';
+
 done_testing;
