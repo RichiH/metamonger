@@ -2,11 +2,13 @@
 
 use strict;
 use warnings;
+use v5.10;
 
 use Data::Dumper;
 use File::Util;
 use Getopt::Long qw/:config gnu_getopt no_auto_abbrev/;
-use Hash::Merge::Simple qw/ merge /;
+use Hash::Diff qw/diff/;
+use Hash::Merge::Simple qw/merge/;
 use JSON;
 use Log::Contextual qw/:log :dlog set_logger with_logger/;
 use Log::Contextual::SimpleLogger;
@@ -19,6 +21,12 @@ use utf8::all;
 my $VERSION = '0.20130627';
 my $STORAGE_VERSION = '0';
 my $STORAGE = '.metamonger';
+
+# Allowed function references; required by `use strict`
+my %DIFF_ACTIONS = (
+	'print_metadata'       => \&print_metadata,
+	'set_metadata_on_file' => \&set_metadata_on_file,
+);
 
 # Getopt::Long
 my $opt_debug   = '';
@@ -54,6 +62,16 @@ if ($opt_debug) {
 my $logger = Log::Log4perl->get_logger;
 set_logger $logger;
 
+
+sub diff_hashes {
+	my ($fs_ref, $file_metadata_ref, $execute_sub) = @_;
+	my %diff_hash = %{ diff( $file_metadata_ref, $fs_ref ) };
+	for my $file_name (keys $diff_hash{'metadata'}) {
+		next unless defined $diff_hash{'metadata'}{$file_name};
+
+		&$execute_sub($file_name, \%{$fs_ref->{'metadata'}{$file_name}}, \%{$file_metadata_ref->{'metadata'}{$file_name}}, \%{$diff_hash{'metadata'}{$file_name}});
+    }
+}
 
 sub get_metadata_from_storage {
 	my ($file_metadata_ref) = @_;
@@ -95,9 +113,13 @@ sub get_file_metadata_from_fs {
 		 undef,                          # blocks allocated
 		) = lstat($file) or log_fatal {"Could not stat '$file': $!"};
 
-        $file_metadata_ref->{metadata}{$file}{mode} = sprintf ("%04o", $file_metadata_ref->{metadata}{$file}{mode} & 07777);
+		$file_metadata_ref->{metadata}{$file}{mode} = sprintf ("%04o", $file_metadata_ref->{metadata}{$file}{mode} & 07777);
 
-		# Don't store metadata types unless told to
+		# Don't store metadata types unless told to,
+		# but if {config} isn't there skip this part and
+		# assume we want the full FS data.
+		next if (!$file_metadata_ref->{config});
+
 		for my $metadata_type (keys $file_metadata_ref->{config}{tracked_metadata}) {
 			delete $file_metadata_ref->{metadata}{$file}{$metadata_type} unless $file_metadata_ref->{config}{tracked_metadata}{$metadata_type};
 		}
@@ -118,7 +140,7 @@ sub help {
 	--help|h     Display this help
 	--no-act|n   Do not act; print results only
 	--restore|r  Restore metadata to file system
-	--save|s     Save metadata to file
+	--write|s    Write metadata to file
 	--verbose|v  Print verbose messages
 	--version    Display version information
 ";
@@ -138,9 +160,52 @@ sub set_defaults {
 	return $file_metadata_ref;
 }
 
+sub set_metadata_on_file {
+	my ($file_name, $fs_ref, $file_metadata_ref, $diff_ref) = @_;
+	my $written_atime = 0;
+	my $written_mtime = 0;
+
+	for my $metadata_name (keys $diff_ref) {
+		my $metadata_value = $diff_ref->{$metadata_name};
+
+		if ($metadata_name eq 'mtime' && !$written_atime) {
+			my $atime = $diff_ref->{'atime'} || $file_metadata_ref->{'atime'} || $fs_ref->{'atime'} || -1;
+			print 'having mtime- atime is: ' . $atime . "\n" ;
+
+			utime($atime, $metadata_value, $file_name) or warn "$0: couldn't set atime $!";
+			$written_mtime = 1;
+		}
+
+		if ($metadata_name eq 'atime' && !$written_mtime) {
+			my $mtime = $diff_ref->{'mtime'} || $file_metadata_ref->{'mtime'} || $fs_ref->{'mtime'} || -1;
+			print 'having atime - mtime is: ' . $mtime ;
+
+			utime($metadata_value, $mtime, $file_name) or warn "$0: couldn't set atime $!";
+			$written_atime = 1;
+		}
+	}
+}
+
 sub version {
 	print "$0 version $VERSION\n";
 	exit;
+}
+
+sub write_metadata_to_fs {
+	my ($metadata_fs_ref, $file_metadata_ref) = @_;
+	log_trace { '%file_metadata: ' . Dumper $file_metadata_ref };
+	#TODO better names
+	my %file_metadata_config;
+	$file_metadata_config{'config'} = delete $file_metadata_ref->{'config'};
+	diff_hashes($metadata_fs_ref, $file_metadata_ref, $DIFF_ACTIONS{'set_metadata_on_file'});
+
+
+
+	# TODO utimes for ?time
+	# TODO chown for ?id
+	# TODO chmod for ?mode
+	#      read as integer, not string
+	#      check if we are root and error out if we are not
 }
 
 sub write_metadata_to_storage {
@@ -210,7 +275,10 @@ sub main {
 		write_metadata_to_storage($file_metadata_ref);
 	} elsif (!$opt_diff &&  $opt_restore && !$opt_save) {
 		# restore data from file to live
-		#TODO
+		my %metadata_fs;
+		my $metadata_fs_ref = \%metadata_fs;
+		$metadata_fs_ref = get_file_metadata_from_fs(\@files, $metadata_fs_ref);
+		write_metadata_to_fs($metadata_fs_ref, $file_metadata_ref);
 	} elsif ( $opt_diff && !$opt_restore && !$opt_save) {
 		# diff file against live data
 		#TODO
