@@ -29,6 +29,7 @@ my %DIFF_ACTIONS = (
 );
 
 # Getopt::Long
+my $opt_config  = '';
 my $opt_debug   = '';
 my $opt_diff    = '';
 my $opt_file    = '';
@@ -40,15 +41,16 @@ my $opt_verbose = '';
 my $opt_version = '';
 
 GetOptions (
-	'debug'     => \$opt_debug,
-	'diff|d'    => \$opt_diff,
-	'file|f=s'  => \$opt_file,
-	'help|h'    => \$opt_help,
-	'no-act|n'  => \$opt_no_act,
-	'restore|r' => \$opt_restore,
-	'save|s'    => \$opt_save,
-	'verbose|v' => \$opt_verbose,
-	'version'   => \$opt_version,
+	'config|c=s' => \$opt_config,
+	'debug'      => \$opt_debug,
+	'diff|d'     => \$opt_diff,
+	'file|f=s'   => \$opt_file,
+	'help|h'     => \$opt_help,
+	'no-act|n'   => \$opt_no_act,
+	'restore|r'  => \$opt_restore,
+	'save|s'     => \$opt_save,
+	'verbose|v'  => \$opt_verbose,
+	'version'    => \$opt_version,
 ) || help(1);
 
 # Set verbosity level and set up logger
@@ -134,6 +136,7 @@ sub help {
 	my ($ret)=@_;
 	print "usage: $0 <args> <glob>
 
+	--config     Sets config file. Defaults to ~/.config/metamonger.
 	--debug      Print debug messages
 	--diff|d     Diff between stored and live metadata
 	--file|f     Specify storage file
@@ -146,6 +149,28 @@ sub help {
 ";
 	exit $ret;
 }
+
+sub load_config {
+	my ($file_metadata_ref, $config_file) = @_;
+
+	if (!$config_file) {
+		$config_file = $ENV{"HOME"} . '/.config/metamonger';
+	}
+
+	return $file_metadata_ref unless -e $config_file;
+
+	open(my $config_fh, "<", $config_file) or die $!;
+
+	my $config_ref = from_json(do {local $/; <$config_fh>}, {relaxed=>1});
+	my %config_json = %$config_ref;
+
+	foreach my $config_key (keys %config_json) {
+		$file_metadata_ref->{config}{$config_key} = $config_json{$config_key};
+	}
+
+	return $file_metadata_ref;
+}
+
 
 sub set_defaults {
 	my ($file_metadata_ref) = @_;
@@ -268,6 +293,7 @@ sub main {
 	#TODO read potential command lines options
 
 	$file_metadata_ref = get_metadata_from_storage($file_metadata_ref);
+	$file_metadata_ref = load_config ($file_metadata_ref, $opt_config);
 
 	if      (!$opt_diff && !$opt_restore &&  $opt_save) {
 		# save live data to file
