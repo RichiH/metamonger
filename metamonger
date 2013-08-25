@@ -154,9 +154,6 @@ sub load_config {
 	my ($file_metadata_ref, $config_file) = @_;
 
 	return $file_metadata_ref unless ($config_file);
-	if (!$config_file) {
-		$config_file = $ENV{"HOME"} . '/.config/metamonger';
-	}
 
 	return $file_metadata_ref unless -e $config_file;
 
@@ -296,6 +293,11 @@ sub main {
 	$file_metadata_ref = get_metadata_from_storage($file_metadata_ref);
 
 	if ($opt_config) {
+		if (!-e $opt_config) {
+			log_fatal { "$opt_config doesn't exist!" };
+			exit;
+		}
+
 		$file_metadata_ref = load_config ($file_metadata_ref, $opt_config);
 	} else {
 		$file_metadata_ref = load_config ($file_metadata_ref, $ENV{"HOME"} . '/.config/metamonger');
