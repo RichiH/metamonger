@@ -289,18 +289,18 @@ sub main {
 	my $file_metadata_ref = \%file_metadata;
 
 	$file_metadata_ref = set_defaults($file_metadata_ref);
-	#TODO read global config
-	#TODO read user config
-	#TODO read potential command lines options
 
-	$file_metadata_ref = get_metadata_from_storage($file_metadata_ref);
-
+	# If the user provided a config file, it should override the normal config files..
 	if ($opt_config) {
 		$file_metadata_ref = load_config ($file_metadata_ref, $opt_config);
 	} else {
 		$file_metadata_ref = load_config ($file_metadata_ref, $ENV{"HOME"} . '/.config/metamonger');
 		$file_metadata_ref = load_config ($file_metadata_ref, '/etc/metamonger/config');
 	}
+	# ..but the values stored in the actual file should still take precedence
+	$file_metadata_ref = get_metadata_from_storage($file_metadata_ref);
+	# only directly changed options should trump that
+	#TODO read potential command lines options
 
 	if      (!$opt_diff && !$opt_restore &&  $opt_save) {
 		# save live data to file
