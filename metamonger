@@ -153,6 +153,7 @@ sub help {
 sub load_config {
 	my ($file_metadata_ref, $config_file) = @_;
 
+	return $file_metadata_ref unless ($config_file);
 	if (!$config_file) {
 		$config_file = $ENV{"HOME"} . '/.config/metamonger';
 	}
@@ -293,7 +294,13 @@ sub main {
 	#TODO read potential command lines options
 
 	$file_metadata_ref = get_metadata_from_storage($file_metadata_ref);
-	$file_metadata_ref = load_config ($file_metadata_ref, $opt_config);
+
+	if ($opt_config) {
+		$file_metadata_ref = load_config ($file_metadata_ref, $opt_config);
+	} else {
+		$file_metadata_ref = load_config ($file_metadata_ref, $ENV{"HOME"} . '/.config/metamonger');
+		$file_metadata_ref = load_config ($file_metadata_ref, '/etc/metamonger/config');
+	}
 
 	if      (!$opt_diff && !$opt_restore &&  $opt_save) {
 		# save live data to file
