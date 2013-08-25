@@ -291,7 +291,7 @@ sub main {
 	if ($opt_config) {
 		if (!-e $opt_config) {
 			log_fatal { "$opt_config doesn't exist!" };
-			exit;
+			exit 1;
 		}
 
 		$file_metadata_ref = load_config ($file_metadata_ref, $opt_config);
