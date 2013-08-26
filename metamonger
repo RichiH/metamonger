@@ -253,7 +253,8 @@ sub main {
 	my @files;
 	foreach my $match (@matches) {
 		my $file_util = File::Util->new();
-		@files = map $file_util->list_dir($_, '--recurse'), $match if -d $match;
+
+		push (@files, map $file_util->list_dir($_, '--recurse'), $match) if -d $match;
 		push(@files, $match) if -f $match;
 	}
 
