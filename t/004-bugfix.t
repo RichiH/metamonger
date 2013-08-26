@@ -19,8 +19,8 @@ chdir 't/etc/' or die $!;
 my $STORAGE = '.metamonger';
 
 if (!-e 'metamonger') {
-    system ("ln -s '../../metamonger'");
-    die $? if $?;
+	system ("ln -s '../../metamonger'");
+	die $? if $?;
 }
 
 system ('mkdir a/');
@@ -28,11 +28,11 @@ system ('mkdir b/');
 die $? if $?;
 
 eval {
-    touch '001';
-    touch 'a/002';
-    touch 'b/003';
-    touch '004';
-    touch 'a/005';
+	touch '001';
+	touch 'a/002';
+	touch 'b/003';
+	touch '004';
+	touch 'a/005';
 };
 die $@ if $@;
 
@@ -40,7 +40,7 @@ system ('./metamonger --save');
 die $? if $?;
 
 eval {
-    touch $STORAGE unless -e $STORAGE;
+	touch $STORAGE unless -e $STORAGE;
 };
 die $@ if $@;
 
