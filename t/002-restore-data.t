@@ -52,53 +52,53 @@ die $@ if $@;
 system ('./metamonger --restore');
 
 my (undef,                          # device number
- undef,                          # inode number
- undef,
- undef,                          # number of (hard) links
- undef,
- undef,
- undef,                          # device identifier
- undef,                          # total size
- $atime_1,
- $mtime_1,
- undef,                          # ctime; can not be set on Unix
- undef,                          # preferred block size
- undef,                          # blocks allocated
+    undef,                          # inode number
+    undef,
+    undef,                          # number of (hard) links
+    undef,
+    undef,
+    undef,                          # device identifier
+    undef,                          # total size
+    $atime_1,
+    $mtime_1,
+    undef,                          # ctime; can not be set on Unix
+    undef,                          # preferred block size
+    undef,                          # blocks allocated
 ) = lstat('001') or log_fatal {"Could not stat '001': $!"};
 
 ok $atime_1 == 1337;
 ok $mtime_1 == 42;
 
 my (undef,                          # device number
- undef,                          # inode number
- undef,
- undef,                          # number of (hard) links
- undef,
- undef,
- undef,                          # device identifier
- undef,                          # total size
- undef,
- $mtime_2,
- undef,                          # ctime; can not be set on Unix
- undef,                          # preferred block size
- undef,                          # blocks allocated
+    undef,                          # inode number
+    undef,
+    undef,                          # number of (hard) links
+    undef,
+    undef,
+    undef,                          # device identifier
+    undef,                          # total size
+    undef,
+    $mtime_2,
+    undef,                          # ctime; can not be set on Unix
+    undef,                          # preferred block size
+    undef,                          # blocks allocated
 ) = lstat('002') or log_fatal {"Could not stat '002': $!"};
 
 ok $mtime_2 == 9001;
 
 my (undef,                          # device number
- undef,                          # inode number
- undef,
- undef,                          # number of (hard) links
- undef,
- undef,
- undef,                          # device identifier
- undef,                          # total size
- $atime_3,
- undef,
- undef,                          # ctime; can not be set on Unix
- undef,                          # preferred block size
- undef,                          # blocks allocated
+    undef,                          # inode number
+    undef,
+    undef,                          # number of (hard) links
+    undef,
+    undef,
+    undef,                          # device identifier
+    undef,                          # total size
+    $atime_3,
+    undef,
+    undef,                          # ctime; can not be set on Unix
+    undef,                          # preferred block size
+    undef,                          # blocks allocated
 ) = lstat('003') or log_fatal {"Could not stat '003': $!"};
 
 ok $atime_3 = 9002;
