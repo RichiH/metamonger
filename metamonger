@@ -192,7 +192,7 @@ sub set_metadata_on_file {
 
 		if ($metadata_name eq 'mtime' && !$written_atime) {
 			my $atime = $diff_ref->{'atime'} || $file_metadata_ref->{'atime'} || $fs_ref->{'atime'} || -1;
-			print 'having mtime- atime is: ' . $atime . "\n" ;
+			log_trace{'Stored mtime, read atime from FS: ' . $atime};
 
 			utime($atime, $metadata_value, $file_name) or warn "$0: couldn't set atime $!";
 			$written_mtime = 1;
@@ -200,7 +200,7 @@ sub set_metadata_on_file {
 
 		if ($metadata_name eq 'atime' && !$written_mtime) {
 			my $mtime = $diff_ref->{'mtime'} || $file_metadata_ref->{'mtime'} || $fs_ref->{'mtime'} || -1;
-			print 'having atime - mtime is: ' . $mtime ;
+			log_trace{'Stored atime, read mtime from FS: ' . $mtime};
 
 			utime($metadata_value, $mtime, $file_name) or warn "$0: couldn't set atime $!";
 			$written_atime = 1;
