@@ -23,14 +23,14 @@ print FILE '{"config":{"program":"metamonger","storage_version":0,"strict_json":
 close FILE;
 
 if (!-e 'metamonger') {
-    system ("ln -s '../../metamonger'");
-    die $? if $?;
+	system ("ln -s '../../metamonger'");
+	die $? if $?;
 }
 
 eval {
-    touch '001';
-    touch '002';
-    touch '003';
+	touch '001';
+	touch '002';
+	touch '003';
 };
 die $@ if $@;
 
@@ -43,9 +43,9 @@ system ('./metamonger --save 001 002 003');
 die $? if $?;
 
 eval {
-    touch '001';
-    touch '002';
-    touch '003';
+	touch '001';
+	touch '002';
+	touch '003';
 };
 die $@ if $@;
 

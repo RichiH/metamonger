@@ -24,12 +24,12 @@ close FILE;
 
 
 if (!-e 'metamonger') {
-    system ("ln -s '../../metamonger'");
-    die $? if $?;
+	system ("ln -s '../../metamonger'");
+	die $? if $?;
 }
 
 eval {
-    touch '001';
+	touch '001';
 };
 die $@ if $@;
 
@@ -40,7 +40,7 @@ system ('./metamonger --save 001');
 die $? if $?;
 
 eval {
-    touch $STORAGE unless -e $STORAGE;
+	touch $STORAGE unless -e $STORAGE;
 };
 die $@ if $@;
 

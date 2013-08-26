@@ -20,12 +20,12 @@ my $STORAGE = '.metamonger';
 my $CONFIG  = 'metamonger.conf';
 
 if (!-e 'metamonger') {
-    system ("ln -s '../../metamonger'");
-    die $? if $?;
+	system ("ln -s '../../metamonger'");
+	die $? if $?;
 }
 
 eval {
-    touch '001';
+	touch '001';
 };
 die $@ if $@;
 
@@ -36,7 +36,7 @@ system ('./metamonger --save 001');
 die $? if $?;
 
 eval {
-    touch $STORAGE unless -e $STORAGE;
+	touch $STORAGE unless -e $STORAGE;
 };
 die $@ if $@;
 
@@ -53,7 +53,7 @@ ok !$metadata{'metadata'}{'001'}{'atime'};
 ok !$metadata{'metadata'}{'001'}{'mode'};
 
 eval {
-    touch $CONFIG unless -e $CONFIG;
+	touch $CONFIG unless -e $CONFIG;
 };
 die $@ if $@;
 
@@ -67,7 +67,7 @@ system ("./metamonger --save 001 --config $CONFIG");
 die $? if $?;
 
 eval {
-    touch $STORAGE unless -e $STORAGE;
+	touch $STORAGE unless -e $STORAGE;
 };
 die $@ if $@;
 
