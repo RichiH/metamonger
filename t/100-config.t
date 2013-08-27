@@ -42,7 +42,7 @@ die $@ if $@;
 
 open(my $storage_fh, "<", $STORAGE) or die $!;
 
-my $metadata_ref = from_json(do {local $/; <$storage_fh>}, {relaxed=>1});
+my $metadata_ref = from_json(do {local $/; <$storage_fh>}, {relaxed=>0});
 
 close $storage_fh;
 
@@ -73,7 +73,7 @@ die $@ if $@;
 
 open($storage_fh, "<", $STORAGE) or die $!;
 
-$metadata_ref = from_json(do {local $/; <$storage_fh>}, {relaxed=>1});
+$metadata_ref = from_json(do {local $/; <$storage_fh>}, {relaxed=>0});
 %metadata = %$metadata_ref;
 
 close $storage_fh;
