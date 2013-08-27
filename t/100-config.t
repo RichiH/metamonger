@@ -57,9 +57,9 @@ eval {
 };
 die $@ if $@;
 
-open (FILE, ">$CONFIG") or die $?;
-print FILE '{"tracked_metadata":{"atime":1,"gid":0,"mode":1,"mtime":0,"uid":0}}';
-close FILE;
+open ($storage_fh, ">", $CONFIG) or die $?;
+print $storage_fh '{"tracked_metadata":{"atime":1,"gid":0,"mode":1,"mtime":0,"uid":0}}';
+close $storage_fh;
 
 rm_f $STORAGE;
 

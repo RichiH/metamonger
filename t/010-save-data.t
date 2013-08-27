@@ -47,6 +47,9 @@ die $@ if $@;
 open(my $storage_fh, "<", $STORAGE) or die $!;
 
 my $metadata_ref = from_json(do {local $/; <$storage_fh>}, {relaxed=>1});
+
+close $storage_fh;
+
 my %metadata = %$metadata_ref;
 
 ok $metadata{'metadata'}{'001'}{'mtime'} == 42;
