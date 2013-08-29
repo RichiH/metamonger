@@ -65,12 +65,12 @@ set_logger $logger;
 
 
 sub diff_hashes {
-	my ($fs_ref, $file_metadata_ref, $execute_sub) = @_;
-	my %diff_hash = %{ diff( $file_metadata_ref, $fs_ref ) };
+	my ($a, $b, $execute_sub) = @_;
+	my %diff_hash = %{ diff( $a, $b ) };
 	for my $file_name (keys $diff_hash{'metadata'}) {
 		next unless defined $diff_hash{'metadata'}{$file_name};
 
-		&$execute_sub($file_name, \%{$fs_ref->{'metadata'}{$file_name}}, \%{$file_metadata_ref->{'metadata'}{$file_name}}, \%{$diff_hash{'metadata'}{$file_name}});
+		&$execute_sub($file_name, \%{$a->{'metadata'}{$file_name}}, \%{$b->{'metadata'}{$file_name}}, \%{$diff_hash{'metadata'}{$file_name}});
     }
 }
 
@@ -188,7 +188,7 @@ sub set_defaults {
 }
 
 sub set_metadata_on_file {
-	my ($file_name, $fs_ref, $file_metadata_ref, $diff_ref) = @_;
+	my ($file_name, $file_metadata_ref, $fs_ref, $diff_ref) = @_;
 	my $written_atime = 0;
 	my $written_mtime = 0;
 
@@ -224,7 +224,7 @@ sub write_metadata_to_fs {
 	#TODO better names
 	my %file_metadata_config;
 	$file_metadata_config{'config'} = delete $file_metadata_ref->{'config'};
-	diff_hashes($metadata_fs_ref, $file_metadata_ref, $DIFF_ACTIONS{'set_metadata_on_file'});
+	diff_hashes($file_metadata_ref, $metadata_fs_ref, $DIFF_ACTIONS{'set_metadata_on_file'});
 
 
 
