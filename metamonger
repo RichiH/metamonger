@@ -25,6 +25,7 @@ my $STORAGE = '.metamonger';
 my %DIFF_ACTIONS = (
 	'print_metadata'       => \&print_metadata,
 	'set_metadata_on_file' => \&set_metadata_on_file,
+	'print_diff'          => \&print_diff,
 );
 
 # Getopt::Long
@@ -63,6 +64,12 @@ if ($opt_debug) {
 my $logger = Log::Log4perl->get_logger;
 set_logger $logger;
 
+sub diff_data {
+	my ($fs_ref, $file_metadata_ref) = @_;
+
+	print "filename - metadata - old ===> new\n";
+	diff_hashes ($fs_ref, $file_metadata_ref, $DIFF_ACTIONS{print_diff});
+}
 
 sub diff_hashes {
 	my ($a, $b, $execute_sub) = @_;
@@ -72,6 +79,19 @@ sub diff_hashes {
 
 		&$execute_sub($file_name, \%{$a->{'metadata'}{$file_name}}, \%{$b->{'metadata'}{$file_name}}, \%{$diff_hash{'metadata'}{$file_name}});
     }
+}
+
+sub print_diff {
+	my ($file_name, $fs_ref, $file_metadata_ref, $diff_ref) = @_;
+
+	return if !keys $file_metadata_ref;
+
+	foreach my $metadata ( keys $diff_ref ) {
+		next if !$file_metadata_ref->{$metadata};
+
+		print "file: $file_name: $metadata: $file_metadata_ref->{$metadata} ==> $diff_ref->{$metadata}\n";
+	}
+
 }
 
 sub get_metadata_from_storage {
@@ -321,7 +341,12 @@ sub main {
 		write_metadata_to_fs($metadata_fs_ref, $file_metadata_ref);
 	} elsif ( $opt_diff && !$opt_restore && !$opt_save) {
 		# diff file against live data
-		#TODO
+		my %metadata_fs;
+
+		my $metadata_fs_ref = \%metadata_fs;
+		$metadata_fs_ref = get_file_metadata_from_fs(\@files, $metadata_fs_ref);
+
+		diff_data ( $metadata_fs_ref, $file_metadata_ref );
 	} else {
 		log_trace {'Did not enter any other routine; printing help and exiting'};
 		help(0);
