@@ -210,6 +210,10 @@ sub set_metadata_on_file {
 			utime($metadata_value, $mtime, $file_name) or warn "$0: couldn't set atime $!";
 			$written_atime = 1;
 		}
+
+		if ($metadata_name eq 'mode') {
+			chmod $metadata_value, $file_name;
+		}
 	}
 }
 
