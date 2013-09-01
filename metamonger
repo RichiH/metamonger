@@ -79,7 +79,7 @@ sub diff_hashes {
 		next unless defined $diff_hash{'metadata'}{$file_name};
 
 		$error_count += &$execute_sub($file_name, \%{$a->{'metadata'}{$file_name}}, \%{$b->{'metadata'}{$file_name}}, \%{$diff_hash{'metadata'}{$file_name}});
-    }
+	}
 }
 
 sub print_diff {
