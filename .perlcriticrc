@@ -1,0 +1,4 @@
+severity = 4
+# Nothing wrong with expression forms of grep and map
+[-BuiltinFunctions::RequireBlockGrep]
+[-BuiltinFunctions::RequireBlockMap]
