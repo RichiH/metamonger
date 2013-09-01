@@ -66,11 +66,12 @@ set_logger $logger;
 
 sub diff_hashes {
 	my ($fs_ref, $file_metadata_ref, $execute_sub) = @_;
+	my $error_count = 0;
 	my %diff_hash = %{ diff( $file_metadata_ref, $fs_ref ) };
 	for my $file_name (keys $diff_hash{'metadata'}) {
 		next unless defined $diff_hash{'metadata'}{$file_name};
 
-		&$execute_sub($file_name, \%{$fs_ref->{'metadata'}{$file_name}}, \%{$file_metadata_ref->{'metadata'}{$file_name}}, \%{$diff_hash{'metadata'}{$file_name}});
+		$error_count += &$execute_sub($file_name, \%{$fs_ref->{'metadata'}{$file_name}}, \%{$file_metadata_ref->{'metadata'}{$file_name}}, \%{$diff_hash{'metadata'}{$file_name}});
     }
 }
 
@@ -184,6 +185,7 @@ sub set_defaults {
 
 sub set_metadata_on_file {
 	my ($file_name, $fs_ref, $file_metadata_ref, $diff_ref) = @_;
+	my $error_count = 0;
 	my $written_atime = 0;
 	my $written_mtime = 0;
 
@@ -194,7 +196,10 @@ sub set_metadata_on_file {
 			my $atime = $diff_ref->{'atime'} || $file_metadata_ref->{'atime'} || $fs_ref->{'atime'} || -1;
 			log_trace{'Stored mtime, read atime from FS: ' . $atime};
 
-			utime($atime, $metadata_value, $file_name) or warn "$0: couldn't set atime $!";
+			utime($atime, $metadata_value, $file_name) or do {
+				warn "$0: couldn't set atime on '$file_name': $!";
+				$error_count++;
+			};
 			$written_mtime = 1;
 		}
 
@@ -202,10 +207,14 @@ sub set_metadata_on_file {
 			my $mtime = $diff_ref->{'mtime'} || $file_metadata_ref->{'mtime'} || $fs_ref->{'mtime'} || -1;
 			log_trace{'Stored atime, read mtime from FS: ' . $mtime};
 
-			utime($metadata_value, $mtime, $file_name) or warn "$0: couldn't set atime $!";
+			utime($metadata_value, $mtime, $file_name) or do {
+				warn "$0: couldn't set atime on '$file_name': $!";
+				$error_count++;
+			};
 			$written_atime = 1;
 		}
 	}
+	return $error_count;
 }
 
 sub version {
@@ -216,11 +225,11 @@ sub version {
 sub write_metadata_to_fs {
 	my ($metadata_fs_ref, $file_metadata_ref) = @_;
 	log_trace { '%file_metadata: ' . Dumper $file_metadata_ref };
+	my $error_count = 0;
 	#TODO better names
 	my %file_metadata_config;
 	$file_metadata_config{'config'} = delete $file_metadata_ref->{'config'};
-	diff_hashes($metadata_fs_ref, $file_metadata_ref, $DIFF_ACTIONS{'set_metadata_on_file'});
-
+	$error_count += diff_hashes($metadata_fs_ref, $file_metadata_ref, $DIFF_ACTIONS{'set_metadata_on_file'});
 
 
 	# TODO utimes for ?time
@@ -228,6 +237,8 @@ sub write_metadata_to_fs {
 	# TODO chmod for ?mode
 	#      read as integer, not string
 	#      check if we are root and error out if we are not
+
+	return $error_count;
 }
 
 sub write_metadata_to_storage {
@@ -259,6 +270,9 @@ sub main {
 	} elsif ($opt_version) {
 		version;
 	}
+
+	# Initialize variables
+	my $error_count = 0;
 
 	# Match ARGV to files and directories
 	my @matches;
@@ -313,7 +327,7 @@ sub main {
 		my %metadata_fs;
 		my $metadata_fs_ref = \%metadata_fs;
 		$metadata_fs_ref = get_file_metadata_from_fs(\@files, $metadata_fs_ref);
-		write_metadata_to_fs($metadata_fs_ref, $file_metadata_ref);
+		$error_count += write_metadata_to_fs($metadata_fs_ref, $file_metadata_ref);
 	} elsif ( $opt_diff && !$opt_restore && !$opt_save) {
 		# diff file against live data
 		#TODO
@@ -322,6 +336,7 @@ sub main {
 		help(0);
 	}
 
+	log_error { "There were a total of $error_count non-fatal errors"} if $error_count;
 
 #	log_trace {"All variables\n" . Dumper peek_my(0) };
 #	log_trace {'trace'};
