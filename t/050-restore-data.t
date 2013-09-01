@@ -31,6 +31,7 @@ eval {
 	touch '001';
 	touch '002';
 	touch '003';
+	touch '004';
 };
 die $@ if $@;
 
@@ -39,7 +40,9 @@ utime 1337, 42, '001';
 utime -1, 9001, '002';
 utime 9002, -1, '003';
 
-system ('./metamonger --save 001 002 003');
+chmod 666, '004';
+
+system ('./metamonger --save 001 002 003 004');
 die $? if $?;
 
 eval {
@@ -48,6 +51,8 @@ eval {
 	touch '003';
 };
 die $@ if $@;
+
+chmod 777, '004';
 
 system ('./metamonger --restore');
 
@@ -102,6 +107,25 @@ my (undef,                          # device number
 ) = lstat('003') or log_fatal {"Could not stat '003': $!"};
 
 ok $atime_3 = 9002;
+
+my (undef,                          # device number
+    undef,                          # inode number
+    $mode_4,
+    undef,                          # number of (hard) links
+    undef,
+    undef,
+    undef,                          # device identifier
+    undef,                          # total size
+    undef,
+    undef,
+    undef,                          # ctime; can not be set on Unix
+    undef,                          # preferred block size
+    undef,                          # blocks allocated
+) = lstat('004') or log_fatal {"Could not stat '004': $!"};
+
+$mode_4 = sprintf ("%04o", $mode_4 & 07777);
+
+ok $mode_4 == 666;
 
 rm_rf '../etc';
 
