@@ -18,9 +18,9 @@ chdir 't/etc/' or die $!;
 
 my $STORAGE = '.metamonger';
 
-open (FILE, ">$STORAGE") or die $?;
-print FILE '{"config":{"program":"metamonger","storage_version":0,"strict_json":1,"tracked_metadata":{"atime":1,"gid":0,"mode":2,"mtime":1,"uid":0}}}';
-close FILE;
+open (my $storage_fh, ">", $STORAGE) or die $?;
+print $storage_fh '{"config":{"program":"metamonger","storage_version":0,"strict_json":1,"tracked_metadata":{"atime":1,"gid":0,"mode":2,"mtime":1,"uid":0}}}';
+close $storage_fh;
 
 if (!-e 'metamonger') {
 	system ("ln -s '../../metamonger'");

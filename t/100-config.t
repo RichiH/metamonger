@@ -42,7 +42,7 @@ die $@ if $@;
 
 open(my $storage_fh, "<", $STORAGE) or die $!;
 
-my $metadata_ref = from_json(do {local $/; <$storage_fh>}, {relaxed=>1});
+my $metadata_ref = from_json(do {local $/; <$storage_fh>}, {relaxed=>0});
 
 close $storage_fh;
 
@@ -57,9 +57,9 @@ eval {
 };
 die $@ if $@;
 
-open (FILE, ">$CONFIG") or die $?;
-print FILE '{"tracked_metadata":{"atime":1,"gid":0,"mode":1,"mtime":0,"uid":0}}';
-close FILE;
+open ($storage_fh, ">", $CONFIG) or die $?;
+print $storage_fh '{"tracked_metadata":{"atime":1,"gid":0,"mode":1,"mtime":0,"uid":0}}';
+close $storage_fh;
 
 rm_f $STORAGE;
 
@@ -73,7 +73,7 @@ die $@ if $@;
 
 open($storage_fh, "<", $STORAGE) or die $!;
 
-$metadata_ref = from_json(do {local $/; <$storage_fh>}, {relaxed=>1});
+$metadata_ref = from_json(do {local $/; <$storage_fh>}, {relaxed=>0});
 %metadata = %$metadata_ref;
 
 close $storage_fh;

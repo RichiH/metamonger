@@ -87,12 +87,15 @@ sub get_metadata_from_storage {
 		# Merge new data into existing hashref
 		# relaxed mode allows us to read the trailing comma
 		$file_metadata_ref = merge $file_metadata_ref, from_json(do {local $/; <$storage_fh>}, {relaxed => 1});
+
 		unless ($file_metadata_ref->{config}{storage_version} == $STORAGE_VERSION) {
+			close $storage_fh;
 			log_fatal { "Wrong storage version: need '$STORAGE_VERSION', got '$file_metadata_ref->{config}{storage_version}'" };
 			die;
 		}
 	}
 
+	close $storage_fh;
 	return $file_metadata_ref;
 }
 
@@ -159,6 +162,8 @@ sub load_config {
 	open(my $config_fh, "<", $config_file) or die $!;
 
 	my $config_ref = from_json(do {local $/; <$config_fh>}, {relaxed=>1});
+	close $config_fh;
+
 	my %config_json = %$config_ref;
 
 	foreach my $config_key (keys %config_json) {
