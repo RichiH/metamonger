@@ -10,37 +10,7 @@ use Test::Most;
 
 use Data::Dumper;
 
-system ("mkdir -p 't/etc/'");
-
-die $? if $?;
-
 chdir 't/etc/' or die $!;
-
-my $STORAGE = '.metamonger';
-
-open (my $storage_fh, ">", $STORAGE) or die $?;
-print $storage_fh '{"config":{"program":"metamonger","storage_version":0,"strict_json":1,"tracked_metadata":{"atime":1,"gid":0,"mode":2,"mtime":1,"uid":0}}}';
-close $storage_fh;
-
-if (!-e 'metamonger') {
-	system ("ln -s '../../metamonger'");
-	die $? if $?;
-}
-
-eval {
-	touch '001';
-	touch '002';
-	touch '003';
-	touch '004';
-};
-die $@ if $@;
-
-utime 1337, 42, '001';
-
-utime -1, 9001, '002';
-utime 9002, -1, '003';
-
-chmod 666, '004';
 
 system ('./metamonger --save 001 002 003 004');
 die $? if $?;
@@ -126,7 +96,5 @@ my (undef,                          # device number
 $mode_4 = sprintf ("%04o", $mode_4 & 07777);
 
 ok $mode_4 == 666;
-
-rm_rf '../etc';
 
 done_testing;
