@@ -368,7 +368,7 @@ sub main {
 		diff_data ( $metadata_fs_ref, $file_metadata_ref );
 	} else {
 		log_trace {'Did not enter any other routine; printing help and exiting'};
-		help(0);
+		help(1);
 	}
 
 	log_error { "There were a total of $error_count non-fatal errors"} if $error_count;
