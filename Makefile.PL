@@ -12,6 +12,7 @@ all_from 'metamonger';
 
 requires 'Config::Simple';
 requires 'Data::Dumper';
+requires 'File::Copy';
 requires 'File::Util';
 requires 'Getopt::Long';
 requires 'Hash::Merge::Simple';

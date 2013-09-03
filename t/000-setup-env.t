@@ -7,6 +7,8 @@ use Shell::Command;
 
 use Test::Most;
 
+use File::Copy;
+
 system ("mkdir -p 't/etc/'");
 
 die $? if $?;
@@ -15,10 +17,7 @@ chdir 't/etc/' or die $!;
 
 my $STORAGE = '.metamonger';
 
-open (my $FILE, '>', $STORAGE) or die $?;
-print $FILE '{"config":{"program":"metamonger","storage_version":0,"strict_json":1,"tracked_metadata":{"atime":1,"gid":0,"mode":1,"mtime":1,"uid":0}}}';
-close $FILE;
-
+copy ('../files/.metamonger1', $STORAGE);
 
 if (!-e 'metamonger') {
 	system ("ln -s '../../metamonger'");
