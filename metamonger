@@ -212,11 +212,16 @@ sub set_defaults {
 
 sub set_metadata_on_file {
 	my ($file_name, $file_metadata_ref, $fs_ref, $diff_ref) = @_;
+
+	return 0 if (!keys $file_metadata_ref);
+
 	my $error_count = 0;
 	my $written_atime = 0;
 	my $written_mtime = 0;
 
 	for my $metadata_name (keys $diff_ref) {
+		next if !defined $file_metadata_ref->{$metadata_name};
+
 		my $metadata_value = $diff_ref->{$metadata_name};
 
 		if ($metadata_name eq 'mtime' && !$written_atime) {
