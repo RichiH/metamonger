@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use v5.10;
 
+use Config::Simple;
 use Data::Dumper;
 use File::Util;
 use Getopt::Long qw/:config gnu_getopt no_auto_abbrev/;
@@ -177,18 +178,19 @@ sub load_config {
 	my ($file_metadata_ref, $config_file) = @_;
 
 	return $file_metadata_ref unless ($config_file);
-
 	return $file_metadata_ref unless -e $config_file;
 
-	open(my $config_fh, "<", $config_file) or die $!;
+	my %cfg;
+	Config::Simple->import_from($config_file, \%cfg) or die Config::Simple->error();
 
-	my $config_ref = from_json(do {local $/; <$config_fh>}, {relaxed=>1});
-	close $config_fh;
-
-	my %config_json = %$config_ref;
-
-	foreach my $config_key (keys %config_json) {
-		$file_metadata_ref->{config}{$config_key} = $config_json{$config_key};
+	foreach my $option (keys $file_metadata_ref->{config}) {
+		if ($option eq 'tracked_metadata') {
+			foreach my $metadata (keys $file_metadata_ref->{config}{tracked_metadata}) {
+				$file_metadata_ref->{config}{tracked_metadata}{$metadata} = $cfg{"tracked_metadata.$metadata"} if defined $cfg{"tracked_metadata.$metadata"};
+			}
+		} else {
+			$file_metadata_ref->{config}{$option} = $cfg{"default.$option"} if defined $cfg{"default.$option"};
+		}
 	}
 
 	return $file_metadata_ref;
@@ -334,7 +336,7 @@ sub main {
 	# If the user provided a config file, it should override the normal config files..
 	if ($opt_config) {
 		if (!-e $opt_config) {
-			log_fatal { "$opt_config doesn't exist!" };
+			log_fatal { "'$opt_config' does not exist!" };
 			exit 1;
 		}
 
