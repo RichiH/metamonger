@@ -86,7 +86,7 @@ sub diff_hashes {
 sub print_diff {
 	my ($file_name, $fs_ref, $file_metadata_ref, $diff_ref) = @_;
 
-	return if !keys $file_metadata_ref;
+	return 0 if !keys $file_metadata_ref;
 
 	foreach my $metadata ( keys $diff_ref ) {
 		next if !$file_metadata_ref->{$metadata};
@@ -94,6 +94,7 @@ sub print_diff {
 		print "file: $file_name: $metadata: $file_metadata_ref->{$metadata} ==> $diff_ref->{$metadata}\n";
 	}
 
+	return 0;
 }
 
 sub get_metadata_from_storage {
