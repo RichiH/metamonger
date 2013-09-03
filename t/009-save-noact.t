@@ -10,8 +10,10 @@ chdir 't/etc/' or die $!;
 
 # Config = /dev/null so we don't use ~/.config/metamonger,
 # or /etc/metamonger/config.
-my $output = `./metamonger --config=/dev/null --diff`;
 
-ok $output eq "filename - metadata - old ===> new\n";
+my $output = `./metamonger --config=/dev/null --save --no-act`;
+
+ok $output =~ '"001":{"atime":1337,"mode":"0775","mtime":42}';
+ok $output =~ /"004":{\S+,"mode":"0666",\S+}/;
 
 done_testing;

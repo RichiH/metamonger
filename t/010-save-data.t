@@ -12,6 +12,8 @@ use Data::Dumper;
 
 chdir 't/etc/' or die $!;
 
+# Config = /dev/null so we don't use ~/.config/metamonger,
+# or /etc/metamonger/config.
 system ('./metamonger --save 001 --config=/dev/null');
 die $? if $?;
 

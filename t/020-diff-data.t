@@ -8,6 +8,8 @@ use Test::Most;
 
 chdir 't/etc/' or die $!;
 
+# Config = /dev/null so we don't use ~/.config/metamonger,
+# or /etc/metamonger/config.
 my $output = `./metamonger --config=/dev/null --diff`;
 
 ok $output eq "filename - metadata - old ===> new
