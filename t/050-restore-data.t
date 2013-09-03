@@ -12,7 +12,7 @@ use Data::Dumper;
 
 chdir 't/etc/' or die $!;
 
-system ('./metamonger --save 001 002 003 004');
+system ('./metamonger --save 001 002 003 004 --config=/dev/null');
 die $? if $?;
 
 eval {
