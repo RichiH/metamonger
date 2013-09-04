@@ -9,6 +9,7 @@ use Shell::Command;
 use Test::Most;
 
 use Data::Dumper;
+use File::Copy;
 
 system ("mkdir -p 't/etc/'");
 
@@ -17,7 +18,9 @@ die $? if $?;
 chdir 't/etc/' or die $!;
 
 my $STORAGE = '.metamonger';
-my $CONFIG  = 'metamonger.conf';
+my $CONFIG  = 'config1.conf';
+
+copy ("../files/$CONFIG", ".");
 
 if (!-e 'metamonger') {
 	system ("ln -s '../../metamonger'");
@@ -57,10 +60,6 @@ eval {
 };
 die $@ if $@;
 
-open ($storage_fh, ">", $CONFIG) or die $?;
-print $storage_fh '{"tracked_metadata":{"atime":1,"gid":0,"mode":1,"mtime":0,"uid":0}}';
-close $storage_fh;
-
 rm_f $STORAGE;
 
 system ("./metamonger --save 001 --config $CONFIG");
@@ -82,6 +81,4 @@ ok !$metadata{'metadata'}{'001'}{'mtime'};
 ok $metadata{'metadata'}{'001'}{'atime'} == 1337;
 ok $metadata{'metadata'}{'001'}{'mode'} eq '0775';
 
-
-rm_rf '../etc';
 done_testing;
