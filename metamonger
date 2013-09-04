@@ -238,8 +238,8 @@ sub set_metadata_on_file {
 				};
 			}
 			else {
-				print "Set atime to $atime\n";
-				print "Set mtime to $metadata_value\n";
+				print "Would set atime to $atime\n";
+				print "Would set mtime to $metadata_value\n";
 			}
 
 			$written_mtime = 1;
@@ -255,8 +255,8 @@ sub set_metadata_on_file {
 					$error_count++;
 				};
 			} else {
-				print "Set atime to $metadata_value\n";
-				print "Set mtime to $mtime\n";
+				print "Would set atime to $metadata_value\n";
+				print "Would set mtime to $mtime\n";
 			}
 
 			$written_atime = 1;
@@ -266,7 +266,7 @@ sub set_metadata_on_file {
 			if (!$no_act) {
 				chmod $metadata_value, $file_name;
 			} else {
-				print "Set mode to $metadata_value\n";
+				print "Would set mode to $metadata_value\n";
 			}
 		}
 	}
