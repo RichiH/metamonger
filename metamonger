@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use v5.10;
 
+use Config::Simple;
 use Data::Dumper;
 use File::Util;
 use Getopt::Long qw/:config gnu_getopt no_auto_abbrev/;
@@ -25,9 +26,11 @@ my $STORAGE = '.metamonger';
 my %DIFF_ACTIONS = (
 	'print_metadata'       => \&print_metadata,
 	'set_metadata_on_file' => \&set_metadata_on_file,
+	'print_diff'          => \&print_diff,
 );
 
 # Getopt::Long
+my $opt_config  = '';
 my $opt_debug   = '';
 my $opt_diff    = '';
 my $opt_file    = '';
@@ -39,15 +42,16 @@ my $opt_verbose = '';
 my $opt_version = '';
 
 GetOptions (
-	'debug'     => \$opt_debug,
-	'diff|d'    => \$opt_diff,
-	'file|f=s'  => \$opt_file,
-	'help|h'    => \$opt_help,
-	'no-act|n'  => \$opt_no_act,
-	'restore|r' => \$opt_restore,
-	'save|s'    => \$opt_save,
-	'verbose|v' => \$opt_verbose,
-	'version'   => \$opt_version,
+	'config|c=s' => \$opt_config,
+	'debug'      => \$opt_debug,
+	'diff|d'     => \$opt_diff,
+	'file|f=s'   => \$opt_file,
+	'help|h'     => \$opt_help,
+	'no-act|n'   => \$opt_no_act,
+	'restore|r'  => \$opt_restore,
+	'save|s'     => \$opt_save,
+	'verbose|v'  => \$opt_verbose,
+	'version'    => \$opt_version,
 ) || help(1);
 
 # Set verbosity level and set up logger
@@ -61,15 +65,35 @@ if ($opt_debug) {
 my $logger = Log::Log4perl->get_logger;
 set_logger $logger;
 
+sub diff_data {
+	my ($fs_ref, $file_metadata_ref) = @_;
+
+	print "filename - metadata - old ===> new\n";
+	diff_hashes ($fs_ref, $file_metadata_ref, $DIFF_ACTIONS{print_diff});
+}
 
 sub diff_hashes {
-	my ($fs_ref, $file_metadata_ref, $execute_sub) = @_;
-	my %diff_hash = %{ diff( $file_metadata_ref, $fs_ref ) };
+	my ($a, $b, $execute_sub) = @_;
+	my $error_count = 0;
+	my %diff_hash = %{ diff( $a, $b ) };
 	for my $file_name (keys $diff_hash{'metadata'}) {
 		next unless defined $diff_hash{'metadata'}{$file_name};
 
-		&$execute_sub($file_name, \%{$fs_ref->{'metadata'}{$file_name}}, \%{$file_metadata_ref->{'metadata'}{$file_name}}, \%{$diff_hash{'metadata'}{$file_name}});
-    }
+		$error_count += &$execute_sub($file_name, \%{$a->{'metadata'}{$file_name}}, \%{$b->{'metadata'}{$file_name}}, \%{$diff_hash{'metadata'}{$file_name}});
+	}
+}
+
+sub print_diff {
+	my ($file_name, $fs_ref, $file_metadata_ref, $diff_ref) = @_;
+
+	return if !keys $file_metadata_ref;
+
+	foreach my $metadata ( keys $diff_ref ) {
+		next if !$file_metadata_ref->{$metadata};
+
+		print "file: $file_name: $metadata: $file_metadata_ref->{$metadata} ==> $diff_ref->{$metadata}\n";
+	}
+
 }
 
 sub get_metadata_from_storage {
@@ -85,12 +109,15 @@ sub get_metadata_from_storage {
 		# Merge new data into existing hashref
 		# relaxed mode allows us to read the trailing comma
 		$file_metadata_ref = merge $file_metadata_ref, from_json(do {local $/; <$storage_fh>}, {relaxed => 1});
+
 		unless ($file_metadata_ref->{config}{storage_version} == $STORAGE_VERSION) {
+			close $storage_fh;
 			log_fatal { "Wrong storage version: need '$STORAGE_VERSION', got '$file_metadata_ref->{config}{storage_version}'" };
 			die;
 		}
 	}
 
+	close $storage_fh;
 	return $file_metadata_ref;
 }
 
@@ -133,18 +160,42 @@ sub help {
 	my ($ret)=@_;
 	print "usage: $0 <args> <glob>
 
+	--config     Sets config file. Defaults to ~/.config/metamonger.
 	--debug      Print debug messages
 	--diff|d     Diff between stored and live metadata
 	--file|f     Specify storage file
 	--help|h     Display this help
 	--no-act|n   Do not act; print results only
 	--restore|r  Restore metadata to file system
-	--write|s    Write metadata to file
+	--save|s     Write metadata to file
 	--verbose|v  Print verbose messages
 	--version    Display version information
 ";
 	exit $ret;
 }
+
+sub load_config {
+	my ($file_metadata_ref, $config_file) = @_;
+
+	return $file_metadata_ref unless ($config_file);
+	return $file_metadata_ref unless -e $config_file;
+
+	my %cfg;
+	Config::Simple->import_from($config_file, \%cfg) or die Config::Simple->error();
+
+	foreach my $option (keys $file_metadata_ref->{config}) {
+		if ($option eq 'tracked_metadata') {
+			foreach my $metadata (keys $file_metadata_ref->{config}{tracked_metadata}) {
+				$file_metadata_ref->{config}{tracked_metadata}{$metadata} = $cfg{"tracked_metadata.$metadata"} if defined $cfg{"tracked_metadata.$metadata"};
+			}
+		} else {
+			$file_metadata_ref->{config}{$option} = $cfg{"default.$option"} if defined $cfg{"default.$option"};
+		}
+	}
+
+	return $file_metadata_ref;
+}
+
 
 sub set_defaults {
 	my ($file_metadata_ref) = @_;
@@ -160,7 +211,8 @@ sub set_defaults {
 }
 
 sub set_metadata_on_file {
-	my ($file_name, $fs_ref, $file_metadata_ref, $diff_ref) = @_;
+	my ($file_name, $file_metadata_ref, $fs_ref, $diff_ref) = @_;
+	my $error_count = 0;
 	my $written_atime = 0;
 	my $written_mtime = 0;
 
@@ -169,20 +221,31 @@ sub set_metadata_on_file {
 
 		if ($metadata_name eq 'mtime' && !$written_atime) {
 			my $atime = $diff_ref->{'atime'} || $file_metadata_ref->{'atime'} || $fs_ref->{'atime'} || -1;
-			print 'having mtime- atime is: ' . $atime . "\n" ;
+			log_trace{'Stored mtime, read atime from FS: ' . $atime};
 
-			utime($atime, $metadata_value, $file_name) or warn "$0: couldn't set atime $!";
+			utime($atime, $metadata_value, $file_name) or do {
+				warn "$0: couldn't set atime on '$file_name': $!";
+				$error_count++;
+			};
 			$written_mtime = 1;
 		}
 
 		if ($metadata_name eq 'atime' && !$written_mtime) {
 			my $mtime = $diff_ref->{'mtime'} || $file_metadata_ref->{'mtime'} || $fs_ref->{'mtime'} || -1;
-			print 'having atime - mtime is: ' . $mtime ;
+			log_trace{'Stored atime, read mtime from FS: ' . $mtime};
 
-			utime($metadata_value, $mtime, $file_name) or warn "$0: couldn't set atime $!";
+			utime($metadata_value, $mtime, $file_name) or do {
+				warn "$0: couldn't set atime on '$file_name': $!";
+				$error_count++;
+			};
 			$written_atime = 1;
 		}
+
+		if ($metadata_name eq 'mode') {
+			chmod $metadata_value, $file_name;
+		}
 	}
+	return $error_count;
 }
 
 sub version {
@@ -193,10 +256,11 @@ sub version {
 sub write_metadata_to_fs {
 	my ($metadata_fs_ref, $file_metadata_ref) = @_;
 	log_trace { '%file_metadata: ' . Dumper $file_metadata_ref };
+	my $error_count = 0;
 	#TODO better names
 	my %file_metadata_config;
 	$file_metadata_config{'config'} = delete $file_metadata_ref->{'config'};
-	diff_hashes($metadata_fs_ref, $file_metadata_ref, $DIFF_ACTIONS{'set_metadata_on_file'});
+	$error_count += diff_hashes($file_metadata_ref, $metadata_fs_ref, $DIFF_ACTIONS{'set_metadata_on_file'});
 
 
 
@@ -205,6 +269,8 @@ sub write_metadata_to_fs {
 	# TODO chmod for ?mode
 	#      read as integer, not string
 	#      check if we are root and error out if we are not
+
+	return $error_count;
 }
 
 sub write_metadata_to_storage {
@@ -237,6 +303,9 @@ sub main {
 		version;
 	}
 
+	# Initialize variables
+	my $error_count = 0;
+
 	# Match ARGV to files and directories
 	my @matches;
 	if (@ARGV) {
@@ -253,7 +322,8 @@ sub main {
 	my @files;
 	foreach my $match (@matches) {
 		my $file_util = File::Util->new();
-		@files = map $file_util->list_dir($_, '--recurse'), $match if -d $match;
+
+		push (@files, map $file_util->list_dir($_, '--recurse'), $match) if -d $match;
 		push(@files, $match) if -f $match;
 	}
 
@@ -262,11 +332,23 @@ sub main {
 	my $file_metadata_ref = \%file_metadata;
 
 	$file_metadata_ref = set_defaults($file_metadata_ref);
-	#TODO read global config
-	#TODO read user config
-	#TODO read potential command lines options
 
+	# If the user provided a config file, it should override the normal config files..
+	if ($opt_config) {
+		if (!-e $opt_config) {
+			log_fatal { "'$opt_config' does not exist!" };
+			exit 1;
+		}
+
+		$file_metadata_ref = load_config ($file_metadata_ref, $opt_config);
+	} else {
+		$file_metadata_ref = load_config ($file_metadata_ref, $ENV{"HOME"} . '/.config/metamonger');
+		$file_metadata_ref = load_config ($file_metadata_ref, '/etc/metamonger/config');
+	}
+	# ..but the values stored in the actual file should still take precedence
 	$file_metadata_ref = get_metadata_from_storage($file_metadata_ref);
+	# only directly changed options should trump that
+	#TODO read potential command lines options
 
 	if      (!$opt_diff && !$opt_restore &&  $opt_save) {
 		# save live data to file
@@ -277,15 +359,21 @@ sub main {
 		my %metadata_fs;
 		my $metadata_fs_ref = \%metadata_fs;
 		$metadata_fs_ref = get_file_metadata_from_fs(\@files, $metadata_fs_ref);
-		write_metadata_to_fs($metadata_fs_ref, $file_metadata_ref);
+		$error_count += write_metadata_to_fs($metadata_fs_ref, $file_metadata_ref);
 	} elsif ( $opt_diff && !$opt_restore && !$opt_save) {
 		# diff file against live data
-		#TODO
+		my %metadata_fs;
+
+		my $metadata_fs_ref = \%metadata_fs;
+		$metadata_fs_ref = get_file_metadata_from_fs(\@files, $metadata_fs_ref);
+
+		diff_data ( $metadata_fs_ref, $file_metadata_ref );
 	} else {
 		log_trace {'Did not enter any other routine; printing help and exiting'};
-		help(0);
+		help(1);
 	}
 
+	log_error { "There were a total of $error_count non-fatal errors"} if $error_count;
 
 #	log_trace {"All variables\n" . Dumper peek_my(0) };
 #	log_trace {'trace'};
