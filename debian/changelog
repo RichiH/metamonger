@@ -1,3 +1,14 @@
+metamonger (0.20130907-1) experimental; urgency=low
+
+  * New upstream release
+    + Support --restore
+    + Support --config
+    + Support --no-act
+    + Introduce tests
+    + Start using perlcritic
+
+ -- Richard Hartmann <richih@debian.org>  Sat, 07 Sep 2013 13:47:31 +0200
+
 metamonger (0.20130824-1) experimental; urgency=low
 
   * New upstream release
