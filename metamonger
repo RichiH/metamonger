@@ -73,20 +73,20 @@ sub diff_data {
 }
 
 sub diff_hashes {
-	my ($a, $b, $execute_sub) = @_;
+	my ($a, $b, $execute_sub, $no_act) = @_;
 	my $error_count = 0;
 	my %diff_hash = %{ diff( $a, $b ) };
 	for my $file_name (keys $diff_hash{'metadata'}) {
 		next unless defined $diff_hash{'metadata'}{$file_name};
 
-		$error_count += &$execute_sub($file_name, \%{$a->{'metadata'}{$file_name}}, \%{$b->{'metadata'}{$file_name}}, \%{$diff_hash{'metadata'}{$file_name}});
+		$error_count += &$execute_sub($file_name, \%{$a->{'metadata'}{$file_name}}, \%{$b->{'metadata'}{$file_name}}, \%{$diff_hash{'metadata'}{$file_name}}, $no_act);
 	}
 }
 
 sub print_diff {
 	my ($file_name, $fs_ref, $file_metadata_ref, $diff_ref) = @_;
 
-	return if !keys $file_metadata_ref;
+	return 0 if !keys $file_metadata_ref;
 
 	foreach my $metadata ( keys $diff_ref ) {
 		next if !$file_metadata_ref->{$metadata};
@@ -94,6 +94,7 @@ sub print_diff {
 		print "file: $file_name: $metadata: $file_metadata_ref->{$metadata} ==> $diff_ref->{$metadata}\n";
 	}
 
+	return 0;
 }
 
 sub get_metadata_from_storage {
@@ -211,22 +212,36 @@ sub set_defaults {
 }
 
 sub set_metadata_on_file {
-	my ($file_name, $file_metadata_ref, $fs_ref, $diff_ref) = @_;
+	my ($file_name, $file_metadata_ref, $fs_ref, $diff_ref, $no_act) = @_;
+
+	return 0 if (!keys $file_metadata_ref);
+
 	my $error_count = 0;
 	my $written_atime = 0;
 	my $written_mtime = 0;
 
+	print "Act on $file_name:\n";
+
 	for my $metadata_name (keys $diff_ref) {
+		next if !defined $file_metadata_ref->{$metadata_name};
+
 		my $metadata_value = $diff_ref->{$metadata_name};
 
 		if ($metadata_name eq 'mtime' && !$written_atime) {
 			my $atime = $diff_ref->{'atime'} || $file_metadata_ref->{'atime'} || $fs_ref->{'atime'} || -1;
 			log_trace{'Stored mtime, read atime from FS: ' . $atime};
 
-			utime($atime, $metadata_value, $file_name) or do {
-				warn "$0: couldn't set atime on '$file_name': $!";
-				$error_count++;
-			};
+			if (!$no_act) {
+				utime($atime, $metadata_value, $file_name) or do {
+					warn "$0: couldn't set atime on '$file_name': $!";
+					$error_count++;
+				};
+			}
+			else {
+				print "Would set atime to $atime\n";
+				print "Would set mtime to $metadata_value\n";
+			}
+
 			$written_mtime = 1;
 		}
 
@@ -234,17 +249,28 @@ sub set_metadata_on_file {
 			my $mtime = $diff_ref->{'mtime'} || $file_metadata_ref->{'mtime'} || $fs_ref->{'mtime'} || -1;
 			log_trace{'Stored atime, read mtime from FS: ' . $mtime};
 
-			utime($metadata_value, $mtime, $file_name) or do {
-				warn "$0: couldn't set atime on '$file_name': $!";
-				$error_count++;
-			};
+			if (!$no_act) {
+				utime($metadata_value, $mtime, $file_name) or do {
+					warn "$0: couldn't set atime on '$file_name': $!";
+					$error_count++;
+				};
+			} else {
+				print "Would set atime to $metadata_value\n";
+				print "Would set mtime to $mtime\n";
+			}
+
 			$written_atime = 1;
 		}
 
 		if ($metadata_name eq 'mode') {
-			chmod $metadata_value, $file_name;
+			if (!$no_act) {
+				chmod $metadata_value, $file_name;
+			} else {
+				print "Would set mode to $metadata_value\n";
+			}
 		}
 	}
+
 	return $error_count;
 }
 
@@ -254,13 +280,13 @@ sub version {
 }
 
 sub write_metadata_to_fs {
-	my ($metadata_fs_ref, $file_metadata_ref) = @_;
+	my ($metadata_fs_ref, $file_metadata_ref, $no_act) = @_;
 	log_trace { '%file_metadata: ' . Dumper $file_metadata_ref };
 	my $error_count = 0;
 	#TODO better names
 	my %file_metadata_config;
 	$file_metadata_config{'config'} = delete $file_metadata_ref->{'config'};
-	$error_count += diff_hashes($file_metadata_ref, $metadata_fs_ref, $DIFF_ACTIONS{'set_metadata_on_file'});
+	$error_count += diff_hashes($file_metadata_ref, $metadata_fs_ref, $DIFF_ACTIONS{'set_metadata_on_file'}, $no_act);
 
 
 
@@ -274,7 +300,7 @@ sub write_metadata_to_fs {
 }
 
 sub write_metadata_to_storage {
-	my ($file_metadata_ref) = @_;
+	my ($file_metadata_ref, $no_act) = @_;
 	my $json = to_json($file_metadata_ref, {canonical => 1});
 	$json =~ s/"metadata":{/"metadata":{\n/;
 	$json =~ s/},/},\n/g;
@@ -284,12 +310,17 @@ sub write_metadata_to_storage {
 		$json =~ s/}}}/}\n}}\n/g;
 	}
 
-	open(my $storage_fh, ">", $STORAGE) or do {
-		log_fatal { "Can not open '$STORAGE': $!" };
-		die;
-	};
-	print $storage_fh $json;
-	close $storage_fh;
+	if ( !$no_act ) {
+		open(my $storage_fh, ">", $STORAGE) or do {
+			log_fatal { "Can not open '$STORAGE': $!" };
+			die;
+		};
+		print $storage_fh $json;
+		close $storage_fh;
+	} else {
+		print "The following would be written into .metamonger:\n\n";
+		print $json;
+	}
 
 	log_trace{"metadata stored in '$STORAGE':\n".$json};
 }
@@ -353,13 +384,13 @@ sub main {
 	if      (!$opt_diff && !$opt_restore &&  $opt_save) {
 		# save live data to file
 		$file_metadata_ref = get_file_metadata_from_fs(\@files, $file_metadata_ref);
-		write_metadata_to_storage($file_metadata_ref);
+		write_metadata_to_storage($file_metadata_ref, $opt_no_act);
 	} elsif (!$opt_diff &&  $opt_restore && !$opt_save) {
 		# restore data from file to live
 		my %metadata_fs;
 		my $metadata_fs_ref = \%metadata_fs;
 		$metadata_fs_ref = get_file_metadata_from_fs(\@files, $metadata_fs_ref);
-		$error_count += write_metadata_to_fs($metadata_fs_ref, $file_metadata_ref);
+		$error_count += write_metadata_to_fs($metadata_fs_ref, $file_metadata_ref, $opt_no_act);
 	} elsif ( $opt_diff && !$opt_restore && !$opt_save) {
 		# diff file against live data
 		my %metadata_fs;
@@ -367,7 +398,7 @@ sub main {
 		my $metadata_fs_ref = \%metadata_fs;
 		$metadata_fs_ref = get_file_metadata_from_fs(\@files, $metadata_fs_ref);
 
-		diff_data ( $metadata_fs_ref, $file_metadata_ref );
+		diff_data ( $metadata_fs_ref, $file_metadata_ref, $opt_no_act );
 	} else {
 		log_trace {'Did not enter any other routine; printing help and exiting'};
 		help(1);

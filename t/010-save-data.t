@@ -12,7 +12,9 @@ use Data::Dumper;
 
 chdir 't/etc/' or die $!;
 
-system ('./metamonger --save 001');
+# Config = /dev/null so we don't use ~/.config/metamonger,
+# or /etc/metamonger/config.
+system ('./metamonger --save 001 --config=../files/config_empty');
 die $? if $?;
 
 my $STORAGE = '.metamonger';
