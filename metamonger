@@ -18,7 +18,7 @@ use PadWalker qw/peek_my/;
 use Shell::Command;
 
 # global variables
-my $VERSION = '0.20130824';
+my $VERSION = '0.20130907';
 my $STORAGE_VERSION = '0';
 my $STORAGE = '.metamonger';
 
