@@ -29,6 +29,7 @@ my %DIFF_ACTIONS = (
 	'print_diff'          => \&print_diff,
 );
 
+# $opt_untracked=='' should default to $opt_untracked=='all' for now
 my %UNTRACKED_ACTIONS = (
 	''       => \&print_untracked_all,
 	'all'    => \&print_untracked_all,
@@ -43,25 +44,24 @@ my $opt_help      = '';
 my $opt_no_act    = '';
 my $opt_restore   = '';
 my $opt_save      = '';
-# We want untracked='' to mean untracked='all',
-# so let's init it to undef and use
-# !defined $opt_untracked instead of !$opt_untracked
+# $opt_untracked=undef so we can test for !defined $opt_untracked
+# This enables us to special case $opt_untracked=='' and set a default
 my $opt_untracked = undef;
 my $opt_verbose   = '';
 my $opt_version   = '';
 
 GetOptions (
-	'config|c=s' => \$opt_config,
-	'debug'      => \$opt_debug,
-	'diff|d'     => \$opt_diff,
-	'file|f=s'   => \$opt_file,
-	'help|h'     => \$opt_help,
-	'no-act|n'   => \$opt_no_act,
-	'restore|r'  => \$opt_restore,
-	'save|s'     => \$opt_save,
-	'untracked:s'  => \$opt_untracked,
-	'verbose|v'  => \$opt_verbose,
-	'version'    => \$opt_version,
+	'config|c=s'  => \$opt_config,
+	'debug'       => \$opt_debug,
+	'diff|d'      => \$opt_diff,
+	'file|f=s'    => \$opt_file,
+	'help|h'      => \$opt_help,
+	'no-act|n'    => \$opt_no_act,
+	'restore|r'   => \$opt_restore,
+	'save|s'      => \$opt_save,
+	'untracked:s' => \$opt_untracked,
+	'verbose|v'   => \$opt_verbose,
+	'version'     => \$opt_version,
 ) || help(1);
 
 # Set verbosity level and set up logger
@@ -201,7 +201,7 @@ sub help {
 	my ($ret)=@_;
 	print "usage: $0 <args> <glob>
 
-	--config     Sets config file. Defaults to ~/.config/metamonger.
+	--config     Specify config file
 	--debug      Print debug messages
 	--diff|d     Diff between stored and live metadata
 	--file|f     Specify storage file
@@ -209,7 +209,9 @@ sub help {
 	--no-act|n   Do not act; print results only
 	--restore|r  Restore metadata to file system
 	--save|s     Write metadata to file
-	--untracked=collapsed/all/none  Shows untracked files
+	--untracked  Show untracked files
+	--untracked<=no/normal/all>
+
 	--verbose|v  Print verbose messages
 	--version    Display version information
 ";
