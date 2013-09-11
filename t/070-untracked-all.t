@@ -12,7 +12,7 @@ my $output = `./metamonger --untracked=all`;
 ok $output =~ qr#untracked/file#;
 ok $output =~ /untracked_file1/;
 ok $output =~ qr#untracked/dir1/file#;
-ok $output =~ qr#untracked/dir2/#;
+ok $output =~ qr#untracked/dir2#;
 ok $output =~ /untracked_file2/;
 ok $output =~ qr#untracked/dir1/dir2/file#;
 ok $output =~ qr#untracked/dir1/dir3#;

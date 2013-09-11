@@ -21,6 +21,7 @@ use Shell::Command;
 my $VERSION = '0.20130907';
 my $STORAGE_VERSION = '0';
 my $STORAGE = '.metamonger';
+my $IGNORE = '.metamongerignore';
 
 # Allowed function references; required by `use strict`
 my %DIFF_ACTIONS = (
@@ -125,6 +126,8 @@ sub print_diff {
 sub print_untracked_all {
 	my ($fs_ref, $file_metadata_ref) = @_;
 
+	return if (!$fs_ref->{metadata});
+
 	my @untracked_files;
 
 	foreach my $file (keys $fs_ref->{metadata}) {
@@ -194,6 +197,58 @@ sub get_file_metadata_from_fs {
 	}
 	log_trace { '%file_metadata: ' . Dumper $file_metadata_ref };
 	return $file_metadata_ref;
+}
+
+sub get_files {
+	my ($files_ref, $ignore_ref) = @_;
+
+	my @return;
+	my @files = @$files_ref;
+
+	foreach my $file (@files) {
+		my $file_util = File::Util->new();
+		next if $ignore_ref->{$file};
+
+		# Recurse through directories, add files directly
+		if (-d $file) {
+			next if $ignore_ref->{"$file/"};
+
+			my @subfiles = map $file_util->list_dir($_, qw/--with-paths --no-fsdots/), $file;
+
+			if (scalar (@subfiles)) {
+				my $sub_ref = get_files (\@subfiles, $ignore_ref);
+				push @return, @$sub_ref;
+			}
+
+			push(@return, $file);
+		} elsif (-f $file) {
+			push(@return, $file);
+		}
+	}
+
+	return \@return;
+}
+
+sub get_ignored_files {
+	my %ignored;
+
+	return \%ignored if !-f $IGNORE;
+
+	open (my $ignore_fh, '<', $IGNORE);
+
+	while ( my $line = <$ignore_fh> ) {
+		chomp $line;
+
+		my @matched_files = glob $line;
+
+		foreach my $file (@matched_files) {
+			$ignored{$file} = 1;
+		}
+	}
+
+	close $ignore_fh;
+
+	return \%ignored;
 }
 
 sub help {
@@ -394,25 +449,9 @@ sub main {
 	}
 	log_trace { "globbing matches:\n" . Dumper @matches };
 
-	# Recurse through directories, add files directly
-	my @files;
-	foreach my $match (@matches) {
-		my $file_util = File::Util->new();
+	my $ignore_ref = get_ignored_files;
 
-		if (-d $match) {
-			my @matches = map $file_util->list_dir($_, '--recurse' , '--sl-after-dirs'), $match;
-
-			# If we got a list of files back, push em all.
-			# Else it's an empty dir, but keep that fact.
-			if (scalar @matches) {
-				push (@files, @matches);
-			} else {
-				push @files, $match;
-			}
-		} elsif (-f $match) {
-			push(@files, $match);
-		}
-	}
+	my $files_ref = get_files(\@matches, $ignore_ref);
 
 	# It's likely that we will need this data so let's read it
 	my %file_metadata;
@@ -441,27 +480,27 @@ sub main {
 	# mean $opt_untracked='all'
 	if      (!$opt_diff && !$opt_restore &&  $opt_save && !defined $opt_untracked) {
 		# save live data to file
-		$file_metadata_ref = get_file_metadata_from_fs(\@files, $file_metadata_ref);
+		$file_metadata_ref = get_file_metadata_from_fs($files_ref, $file_metadata_ref);
 		write_metadata_to_storage($file_metadata_ref, $opt_no_act);
 	} elsif (!$opt_diff &&  $opt_restore && !$opt_save && !defined $opt_untracked) {
 		# restore data from file to live
 		my %metadata_fs;
 		my $metadata_fs_ref = \%metadata_fs;
-		$metadata_fs_ref = get_file_metadata_from_fs(\@files, $metadata_fs_ref);
+		$metadata_fs_ref = get_file_metadata_from_fs($files_ref, $metadata_fs_ref);
 		$error_count += write_metadata_to_fs($metadata_fs_ref, $file_metadata_ref, $opt_no_act);
 	} elsif ( $opt_diff && !$opt_restore && !$opt_save && !defined $opt_untracked ) {
 		# diff file against live data
 		my %metadata_fs;
 
 		my $metadata_fs_ref = \%metadata_fs;
-		$metadata_fs_ref = get_file_metadata_from_fs(\@files, $metadata_fs_ref);
+		$metadata_fs_ref = get_file_metadata_from_fs($files_ref, $metadata_fs_ref);
 
 		diff_data ( $metadata_fs_ref, $file_metadata_ref, $opt_no_act );
 	} elsif (!$opt_diff && !$opt_restore && !$opt_save &&  defined $opt_untracked) {
 		my %metadata_fs;
 
 		my $metadata_fs_ref = \%metadata_fs;
-		$metadata_fs_ref = get_file_metadata_from_fs(\@files, $metadata_fs_ref);
+		$metadata_fs_ref = get_file_metadata_from_fs($files_ref, $metadata_fs_ref);
 
 		handle_untracked ( $metadata_fs_ref, $file_metadata_ref, $opt_untracked );
 	} else {
