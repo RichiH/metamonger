@@ -112,7 +112,8 @@ sub print_diff {
 
 	return 0 if !keys $file_metadata_ref;
 
-	foreach my $metadata ( keys $diff_ref ) {
+	# Sort the hash as 5.18 made static tests fail; yes, this is an ugly hack that eats performance
+	foreach my $metadata (sort keys $diff_ref ) {
 		next if !$file_metadata_ref->{$metadata};
 
 		print "file: $file_name: $metadata: $file_metadata_ref->{$metadata} ==> $diff_ref->{$metadata}\n";
@@ -265,7 +266,8 @@ sub set_metadata_on_file {
 
 	print "Act on $file_name:\n";
 
-	for my $metadata_name (keys $diff_ref) {
+	# Sort the hash as 5.18 made static tests fail; yes, this is an ugly hack that eats performance
+	for my $metadata_name (sort keys $diff_ref) {
 		next if !defined $file_metadata_ref->{$metadata_name};
 
 		my $metadata_value = $diff_ref->{$metadata_name};

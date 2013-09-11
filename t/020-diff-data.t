@@ -13,8 +13,8 @@ chdir 't/etc/' or die $!;
 my $output = `./metamonger --config=../files/config_empty --diff`;
 
 ok $output eq "filename - metadata - old ===> new
+file: 001: atime: 1337 ==> 9001
 file: 001: mode: 0775 ==> 0777
-file: 001: mtime: 42 ==> 666
-file: 001: atime: 1337 ==> 9001\n";
+file: 001: mtime: 42 ==> 666\n";
 
 done_testing;
