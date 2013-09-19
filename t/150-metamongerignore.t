@@ -34,7 +34,7 @@ eval {
 };
 die $@ if $@;
 
-copy ("../files/.metamongerignore1", "./.metamongerignore");
+copy ("../files/metamongerignore1", "./.metamongerignore");
 
 system ("./metamonger --save dira");
 
@@ -52,7 +52,7 @@ ok !$metadata{metadata}{'dira/dirb/c'};
 
 rm_f $STORAGE;
 
-copy ("../files/.metamongerignore2", "./.metamongerignore");
+copy ("../files/metamongerignore2", "./.metamongerignore");
 
 system ("./metamonger --save dira");
 
@@ -70,7 +70,7 @@ ok !$metadata{metadata}{'dira/dirb/c'};
 
 rm_f $STORAGE;
 
-copy ("../files/.metamongerignore3", "./.metamongerignore");
+copy ("../files/metamongerignore3", "./.metamongerignore");
 
 system ("./metamonger --save dira");
 
@@ -88,7 +88,7 @@ ok !$metadata{metadata}{'dira/dirb/c'};
 
 rm_f $STORAGE;
 
-copy ("../files/.metamongerignore4", "./.metamongerignore");
+copy ("../files/metamongerignore4", "./.metamongerignore");
 
 system ("./metamonger --save dira");
 

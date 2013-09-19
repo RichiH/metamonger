@@ -72,7 +72,7 @@ eval {
 };
 die $@ if $@;
 
-copy ("../files/.metamongerignore10", "./.metamongerignore");
+copy ("../files/metamongerignore10", "./.metamongerignore");
 
 system ("./metamonger --save container");
 
@@ -88,7 +88,7 @@ rm_f $STORAGE;
 
 #################################
 
-copy ("../files/.metamongerignore15", "./.metamongerignore");
+copy ("../files/metamongerignore15", "./.metamongerignore");
 
 system ("./metamonger --save container");
 
@@ -104,7 +104,7 @@ rm_f $STORAGE;
 
 #################################
 
-copy ("../files/.metamongerignore20", "./.metamongerignore");
+copy ("../files/metamongerignore20", "./.metamongerignore");
 
 system ("./metamonger --save container");
 
@@ -164,7 +164,7 @@ rm_f $STORAGE;
 
 #################################
 
-copy ("../files/.metamongerignore30", "./.metamongerignore");
+copy ("../files/metamongerignore30", "./.metamongerignore");
 
 system ("./metamonger --save container");
 
@@ -224,7 +224,7 @@ rm_f $STORAGE;
 
 #################################
 
-copy ("../files/.metamongerignore35", "./.metamongerignore");
+copy ("../files/metamongerignore35", "./.metamongerignore");
 
 system ("./metamonger --save container");
 
@@ -284,7 +284,7 @@ rm_f $STORAGE;
 
 #################################
 
-copy ("../files/.metamongerignore40", "./.metamongerignore");
+copy ("../files/metamongerignore40", "./.metamongerignore");
 
 system ("./metamonger --save container");
 
@@ -344,7 +344,7 @@ rm_f $STORAGE;
 
 #################################
 
-copy ("../files/.metamongerignore50", "./.metamongerignore");
+copy ("../files/metamongerignore50", "./.metamongerignore");
 
 system ("./metamonger --save container");
 
@@ -404,7 +404,7 @@ rm_f $STORAGE;
 
 #################################
 
-copy ("../files/.metamongerignore60", "./.metamongerignore");
+copy ("../files/metamongerignore60", "./.metamongerignore");
 
 system ("./metamonger --save container");
 
@@ -464,7 +464,7 @@ rm_f $STORAGE;
 
 #################################
 
-copy ("../files/.metamongerignore70", "./.metamongerignore");
+copy ("../files/metamongerignore70", "./.metamongerignore");
 
 system ("./metamonger --save container");
 
@@ -524,7 +524,7 @@ rm_f $STORAGE;
 
 #################################
 
-copy ("../files/.metamongerignore80", "./.metamongerignore");
+copy ("../files/metamongerignore80", "./.metamongerignore");
 
 system ("./metamonger --save container");
 
@@ -584,7 +584,7 @@ rm_f $STORAGE;
 
 #################################
 
-copy ("../files/.metamongerignore90", "./.metamongerignore");
+copy ("../files/metamongerignore90", "./.metamongerignore");
 
 system ("./metamonger --save container");
 
@@ -644,7 +644,7 @@ rm_f $STORAGE;
 
 #################################
 
-copy ("../files/.metamongerignore100", "./.metamongerignore");
+copy ("../files/metamongerignore100", "./.metamongerignore");
 
 system ("./metamonger --save container");
 
@@ -704,7 +704,7 @@ rm_f $STORAGE;
 
 #################################
 
-copy ("../files/.metamongerignore110", "./.metamongerignore");
+copy ("../files/metamongerignore110", "./.metamongerignore");
 
 system ("./metamonger --save container");
 
@@ -764,7 +764,7 @@ rm_f $STORAGE;
 
 #################################
 
-copy ("../files/.metamongerignore120", "./.metamongerignore");
+copy ("../files/metamongerignore120", "./.metamongerignore");
 
 system ("./metamonger --save container");
 
@@ -824,7 +824,7 @@ rm_f $STORAGE;
 
 #################################
 
-copy ("../files/.metamongerignore130", "./.metamongerignore");
+copy ("../files/metamongerignore130", "./.metamongerignore");
 
 system ("./metamonger --save container");
 
@@ -884,7 +884,7 @@ rm_f $STORAGE;
 
 #################################
 
-copy ("../files/.metamongerignore140", "./.metamongerignore");
+copy ("../files/metamongerignore140", "./.metamongerignore");
 
 system ("./metamonger --save container");
 
@@ -944,7 +944,7 @@ rm_f $STORAGE;
 
 #################################
 
-copy ("../files/.metamongerignore150", "./.metamongerignore");
+copy ("../files/metamongerignore150", "./.metamongerignore");
 
 system ("./metamonger --save container");
 
@@ -1004,7 +1004,7 @@ rm_f $STORAGE;
 
 #################################
 
-copy ("../files/.metamongerignore160", "./.metamongerignore");
+copy ("../files/metamongerignore160", "./.metamongerignore");
 
 system ("./metamonger --save container");
 

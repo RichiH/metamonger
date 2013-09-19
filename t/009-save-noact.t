@@ -16,4 +16,6 @@ my $output = `./metamonger --config=../files/config_empty --save --no-act`;
 ok $output =~ '"001":{"atime":1337,"mode":"0775","mtime":42}';
 ok $output =~ /"004":{\S+,"mode":"0666",\S+}/;
 
+
+
 done_testing;

@@ -17,7 +17,7 @@ chdir 't/etc/' or die $!;
 
 my $STORAGE = '.metamonger';
 
-copy ('../files/.metamonger1', $STORAGE);
+copy ('../files/metamonger1', $STORAGE);
 
 if (!-e 'metamonger') {
 	system ("ln -s '../../metamonger'");

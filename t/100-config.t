@@ -18,7 +18,7 @@ die $? if $?;
 chdir 't/etc/' or die $!;
 
 my $STORAGE = '.metamonger';
-my $CONFIG  = 'config1.conf';
+my $CONFIG  = 'conf';
 
 copy ("../files/$CONFIG", ".");
 
