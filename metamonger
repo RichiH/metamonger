@@ -390,10 +390,7 @@ sub write_metadata_to_fs {
 
 
 
-	# TODO utimes for ?time
 	# TODO chown for ?id
-	# TODO chmod for ?mode
-	#      read as integer, not string
 	#      check if we are root and error out if we are not
 
 	return $error_count;
