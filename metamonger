@@ -21,13 +21,13 @@ use Shell::Command;
 my $VERSION = '0.20130907';
 my $STORAGE_VERSION = '0';
 my $STORAGE = '.metamonger';
-my $IGNORE = '.metamongerignore';
+my $IGNORE  = '.metamongerignore';
 
 # Allowed function references; required by `use strict`
 my %DIFF_ACTIONS = (
 	'print_metadata'       => \&print_metadata,
 	'set_metadata_on_file' => \&set_metadata_on_file,
-	'print_diff'          => \&print_diff,
+	'print_diff'           => \&print_diff,
 );
 
 # $opt_untracked=='' should default to $opt_untracked=='all' for now
