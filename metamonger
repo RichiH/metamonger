@@ -37,32 +37,37 @@ my %UNTRACKED_ACTIONS = (
 );
 
 # Getopt::Long
-my $opt_config    = '';
-my $opt_debug     = '';
-my $opt_diff      = '';
-my $opt_file      = '';
-my $opt_help      = '';
-my $opt_no_act    = '';
-my $opt_restore   = '';
-my $opt_save      = '';
+my $opt_config         = '';
+my $opt_debug          = '';
+my $opt_diff           = '';
+my $opt_file           = '';
+my $opt_help           = '';
+my $opt_no_act         = '';
+my $opt_restore        = '';
+my $opt_save           = '';
 # $opt_untracked=undef so we can test for !defined $opt_untracked
 # This enables us to special case $opt_untracked=='' and set a default
-my $opt_untracked = undef;
-my $opt_verbose   = '';
-my $opt_version   = '';
+my $opt_untracked      = undef;
+my $opt_verbose        = '';
+my $opt_version        = '';
+my $opt_dereference    = '';
+my $opt_no_dereference = '';
 
 GetOptions (
-	'config|c=s'  => \$opt_config,
-	'debug'       => \$opt_debug,
-	'diff|d'      => \$opt_diff,
-	'file|f=s'    => \$opt_file,
-	'help|h'      => \$opt_help,
-	'no-act|n'    => \$opt_no_act,
-	'restore|r'   => \$opt_restore,
-	'save|s'      => \$opt_save,
-	'untracked:s' => \$opt_untracked,
-	'verbose|v'   => \$opt_verbose,
-	'version'     => \$opt_version,
+	'config|c=s'       => \$opt_config,
+	'debug'            => \$opt_debug,
+	'diff|d'           => \$opt_diff,
+	'file|f=s'         => \$opt_file,
+	'help|h'           => \$opt_help,
+	'no-act|n'         => \$opt_no_act,
+	'restore|r'        => \$opt_restore,
+	'save|s'           => \$opt_save,
+	'untracked:s'      => \$opt_untracked,
+	'verbose|v'        => \$opt_verbose,
+	'version'          => \$opt_version,
+
+	'dereference|L'    => \$opt_dereference,
+	'no-dereference|P' => \$opt_no_dereference,
 ) || help(1);
 
 # Set verbosity level and set up logger
@@ -169,20 +174,37 @@ sub get_metadata_from_storage {
 sub get_file_metadata_from_fs {
 	my ($files_ref, $file_metadata_ref) = @_;
 	foreach my $file (@$files_ref) {
-		(undef,                          # device number
-		 undef,                          # inode number
-		 $file_metadata_ref->{metadata}{$file}{mode},
-		 undef,                          # number of (hard) links
-		 $file_metadata_ref->{metadata}{$file}{uid},
-		 $file_metadata_ref->{metadata}{$file}{gid},
-		 undef,                          # device identifier
-		 undef,                          # total size
-		 $file_metadata_ref->{metadata}{$file}{atime},
-		 $file_metadata_ref->{metadata}{$file}{mtime},
-		 undef,                          # ctime; can not be set on Unix
-		 undef,                          # preferred block size
-		 undef,                          # blocks allocated
-		) = lstat($file) or log_fatal {"Could not stat '$file': $!"};
+		if ($opt_no_dereference) {
+			(undef,                          # device number
+			 undef,                          # inode number
+			 $file_metadata_ref->{metadata}{$file}{mode},
+			 undef,                          # number of (hard) links
+			 $file_metadata_ref->{metadata}{$file}{uid},
+			 $file_metadata_ref->{metadata}{$file}{gid},
+			 undef,                          # device identifier
+			 undef,                          # total size
+			 $file_metadata_ref->{metadata}{$file}{atime},
+			 $file_metadata_ref->{metadata}{$file}{mtime},
+			 undef,                          # ctime; can not be set on Unix
+			 undef,                          # preferred block size
+			 undef,                          # blocks allocated
+			) = lstat($file) or log_fatal {"Could not stat '$file': $!"};
+		} else {
+			(undef,                          # device number
+			 undef,                          # inode number
+			 $file_metadata_ref->{metadata}{$file}{mode},
+			 undef,                          # number of (hard) links
+			 $file_metadata_ref->{metadata}{$file}{uid},
+			 $file_metadata_ref->{metadata}{$file}{gid},
+			 undef,                          # device identifier
+			 undef,                          # total size
+			 $file_metadata_ref->{metadata}{$file}{atime},
+			 $file_metadata_ref->{metadata}{$file}{mtime},
+			 undef,                          # ctime; can not be set on Unix
+			 undef,                          # preferred block size
+			 undef,                          # blocks allocated
+			) = stat($file) or log_fatal {"Could not stat '$file': $!"};
+		}
 
 		$file_metadata_ref->{metadata}{$file}{mode} = sprintf ("%04o", $file_metadata_ref->{metadata}{$file}{mode} & 07777);
 
@@ -257,19 +279,22 @@ sub help {
 	my ($ret)=@_;
 	print "usage: $0 <args> <glob>
 
-	--config     Specify config file
-	--debug      Print debug messages
-	--diff|d     Diff between stored and live metadata
-	--file|f     Specify storage file
-	--help|h     Display this help
-	--no-act|n   Do not act; print results only
-	--restore|r  Restore metadata to file system
-	--save|s     Write metadata to file
-	--untracked  Show untracked files
+	--config            Specify config file
+	--debug             Print debug messages
+	--diff|d            Diff between stored and live metadata
+	--file|f            Specify storage file
+	--help|h            Display this help
+	--no-act|n          Do not act; print results only
+	--restore|r         Restore metadata to file system
+	--save|s            Write metadata to file
+	--untracked         Show untracked files
 	--untracked<=no/normal/all>
 
-	--verbose|v  Print verbose messages
-	--version    Display version information
+	--verbose|v         Print verbose messages
+	--version           Display version information
+
+	--dereference|L     Always follow symlinks (default)
+	--no-dereference|P  Never follow symlinks
 ";
 	exit $ret;
 }
@@ -429,6 +454,12 @@ sub main {
 		help(0);
 	} elsif ($opt_version) {
 		version;
+	}
+
+	# Error out if both $opt_dereference and $opt_no_dereference are set
+	if ($opt_dereference && $opt_no_dereference) {
+		log_fatal { "Can't set both '--dereference' and '--no-dereference'." };
+		exit 1;
 	}
 
 	# Initialize variables
