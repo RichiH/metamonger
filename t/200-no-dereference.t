@@ -32,10 +32,30 @@ lives_and {
 ok system ('touch -d "2042-01-01 00:00:00 +00:00" original') == 0;
 ok system ('touch -h -d "1970-01-01 00:00:42 +00:00" link')  == 0;
 
-my $output = `./metamonger --config=../files/config_empty --save --no-act --no-dereference`;
+my $output;
+
+
+$output = `./metamonger --config=../files/config_empty --save --no-act --no-dereference`;
 
 ok $output =~ '"link":{"mtime":42}';
 ok $output =~ '"original":{"mtime":2272147200}';
+
+$output = `./metamonger --config=../files/config_empty --save --no-act -P`;
+
+ok $output =~ '"link":{"mtime":42}';
+ok $output =~ '"original":{"mtime":2272147200}';
+
+
+$output = `./metamonger --config=../files/config_empty --save --no-act --dereference`;
+
+ok $output =~ '"link":{"mtime":2272147200}';
+ok $output =~ '"original":{"mtime":2272147200}';
+
+$output = `./metamonger --config=../files/config_empty --save --no-act -L`;
+
+ok $output =~ '"link":{"mtime":2272147200}';
+ok $output =~ '"original":{"mtime":2272147200}';
+
 
 $output = `./metamonger --config=../files/config_empty --save --no-act`;
 
