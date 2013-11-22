@@ -39,4 +39,6 @@ ok utime (9002, -1, '003'), 'utime on 003 succeeds';
 
 lives_ok { chmod 666, '004' } 'Chmod on 004 succeeds';
 
+system ("mkdir -p 'shouldnt_save'");
+
 done_testing;

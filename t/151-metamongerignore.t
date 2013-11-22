@@ -114,8 +114,6 @@ close $storage_fh;
 
 %metadata = %$metadata_ref;
 
-ok $metadata{metadata}{'container'};
-
 ok !$metadata{metadata}{'container/file1'};
 ok !$metadata{metadata}{'container/file2'};
 ok $metadata{metadata}{'container/.sekit'};
@@ -173,8 +171,6 @@ $metadata_ref = from_json(do {local $/; <$storage_fh>}, {relaxed=>0});
 close $storage_fh;
 
 %metadata = %$metadata_ref;
-
-ok $metadata{metadata}{'container'};
 
 ok $metadata{metadata}{'container/file1'};
 ok $metadata{metadata}{'container/file2'};
@@ -234,8 +230,6 @@ close $storage_fh;
 
 %metadata = %$metadata_ref;
 
-ok $metadata{metadata}{'container'};
-
 ok $metadata{metadata}{'container/file1'};
 ok $metadata{metadata}{'container/file2'};
 ok $metadata{metadata}{'container/.sekit'};
@@ -293,8 +287,6 @@ $metadata_ref = from_json(do {local $/; <$storage_fh>}, {relaxed=>0});
 close $storage_fh;
 
 %metadata = %$metadata_ref;
-
-ok $metadata{metadata}{'container'};
 
 ok $metadata{metadata}{'container/file1'};
 ok $metadata{metadata}{'container/file2'};
@@ -354,8 +346,6 @@ close $storage_fh;
 
 %metadata = %$metadata_ref;
 
-ok $metadata{metadata}{'container'};
-
 ok $metadata{metadata}{'container/file1'};
 ok $metadata{metadata}{'container/file2'};
 ok $metadata{metadata}{'container/.sekit'};
@@ -413,8 +403,6 @@ $metadata_ref = from_json(do {local $/; <$storage_fh>}, {relaxed=>0});
 close $storage_fh;
 
 %metadata = %$metadata_ref;
-
-ok $metadata{metadata}{'container'};
 
 ok $metadata{metadata}{'container/file1'};
 ok $metadata{metadata}{'container/file2'};
@@ -474,8 +462,6 @@ close $storage_fh;
 
 %metadata = %$metadata_ref;
 
-ok $metadata{metadata}{'container'};
-
 ok $metadata{metadata}{'container/file1'};
 ok $metadata{metadata}{'container/file2'};
 ok $metadata{metadata}{'container/.sekit'};
@@ -533,8 +519,6 @@ $metadata_ref = from_json(do {local $/; <$storage_fh>}, {relaxed=>0});
 close $storage_fh;
 
 %metadata = %$metadata_ref;
-
-ok $metadata{metadata}{'container'};
 
 ok $metadata{metadata}{'container/file1'};
 ok $metadata{metadata}{'container/file2'};
@@ -594,8 +578,6 @@ close $storage_fh;
 
 %metadata = %$metadata_ref;
 
-ok $metadata{metadata}{'container'};
-
 ok $metadata{metadata}{'container/file1'};
 ok $metadata{metadata}{'container/file2'};
 ok $metadata{metadata}{'container/.sekit'};
@@ -653,8 +635,6 @@ $metadata_ref = from_json(do {local $/; <$storage_fh>}, {relaxed=>0});
 close $storage_fh;
 
 %metadata = %$metadata_ref;
-
-ok $metadata{metadata}{'container'};
 
 ok $metadata{metadata}{'container/file1'};
 ok $metadata{metadata}{'container/file2'};
@@ -714,8 +694,6 @@ close $storage_fh;
 
 %metadata = %$metadata_ref;
 
-ok $metadata{metadata}{'container'};
-
 ok $metadata{metadata}{'container/file1'};
 ok $metadata{metadata}{'container/file2'};
 ok $metadata{metadata}{'container/.sekit'};
@@ -773,8 +751,6 @@ $metadata_ref = from_json(do {local $/; <$storage_fh>}, {relaxed=>0});
 close $storage_fh;
 
 %metadata = %$metadata_ref;
-
-ok $metadata{metadata}{'container'};
 
 ok $metadata{metadata}{'container/file1'};
 ok $metadata{metadata}{'container/file2'};
@@ -834,8 +810,6 @@ close $storage_fh;
 
 %metadata = %$metadata_ref;
 
-ok $metadata{metadata}{'container'};
-
 ok $metadata{metadata}{'container/file1'};
 ok $metadata{metadata}{'container/file2'};
 ok $metadata{metadata}{'container/.sekit'};
@@ -893,8 +867,6 @@ $metadata_ref = from_json(do {local $/; <$storage_fh>}, {relaxed=>0});
 close $storage_fh;
 
 %metadata = %$metadata_ref;
-
-ok $metadata{metadata}{'container'};
 
 ok $metadata{metadata}{'container/file1'};
 ok $metadata{metadata}{'container/file2'};
@@ -954,8 +926,6 @@ close $storage_fh;
 
 %metadata = %$metadata_ref;
 
-ok $metadata{metadata}{'container'};
-
 ok $metadata{metadata}{'container/file1'};
 ok $metadata{metadata}{'container/file2'};
 ok $metadata{metadata}{'container/.sekit'};
@@ -1013,8 +983,6 @@ $metadata_ref = from_json(do {local $/; <$storage_fh>}, {relaxed=>0});
 close $storage_fh;
 
 %metadata = %$metadata_ref;
-
-ok $metadata{metadata}{'container'};
 
 ok $metadata{metadata}{'container/file1'};
 ok $metadata{metadata}{'container/file2'};
@@ -1076,8 +1044,6 @@ $metadata_ref = from_json(do {local $/; <$storage_fh>}, {relaxed=>0});
 close $storage_fh;
 
 %metadata = %$metadata_ref;
-
-ok $metadata{metadata}{'container'};
 
 ok $metadata{metadata}{'container/file1'};
 ok $metadata{metadata}{'container/file2'};

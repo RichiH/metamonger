@@ -62,7 +62,6 @@ close $storage_fh;
 
 %metadata = %$metadata_ref;
 
-ok $metadata{metadata}{'dira'};
 ok $metadata{metadata}{'dira/b'};
 ok $metadata{metadata}{'dira/.sekrit'};
 ok !$metadata{metadata}{'dira/dirb'};
@@ -80,7 +79,6 @@ close $storage_fh;
 
 %metadata = %$metadata_ref;
 
-ok $metadata{metadata}{'dira'};
 ok $metadata{metadata}{'dira/.sekrit'};
 ok !$metadata{metadata}{'dira/b'};
 ok !$metadata{metadata}{'dira/dirb'};
@@ -98,10 +96,8 @@ close $storage_fh;
 
 %metadata = %$metadata_ref;
 
-ok $metadata{metadata}{'dira'};
 ok $metadata{metadata}{'dira/.sekrit'};
 ok !$metadata{metadata}{'dira/b'};
-ok $metadata{metadata}{'dira/dirb'};
 ok $metadata{metadata}{'dira/dirb/c'};
 
 rm_f $STORAGE;
