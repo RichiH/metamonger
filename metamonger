@@ -45,6 +45,7 @@ my $opt_help           = '';
 my $opt_no_act         = '';
 my $opt_restore        = '';
 my $opt_save           = '';
+my $opt_type           = 'f';
 # $opt_untracked=undef so we can test for !defined $opt_untracked
 # This enables us to special case $opt_untracked=='' and set a default
 my $opt_untracked      = undef;
@@ -62,6 +63,7 @@ GetOptions (
 	'no-act|n'         => \$opt_no_act,
 	'restore|r'        => \$opt_restore,
 	'save|s'           => \$opt_save,
+	'type|t:s'         => \$opt_type,
 	'untracked:s'      => \$opt_untracked,
 	'verbose|v'        => \$opt_verbose,
 	'version'          => \$opt_version,
@@ -69,6 +71,13 @@ GetOptions (
 	'dereference|L'    => \$opt_dereference,
 	'no-dereference|P' => \$opt_no_dereference,
 ) || help(1);
+
+my @types_chosen  = split //, $opt_type;
+my $types_allowed_ref   = {
+						'd' => 1,
+						'f' => 1,
+					};
+my %types_chosen_hash   = map { $_ => 1 } @types_chosen;
 
 # Set verbosity level and set up logger
 if ($opt_debug) {
@@ -174,7 +183,8 @@ sub get_metadata_from_storage {
 sub get_file_metadata_from_fs {
 	my ($files_ref, $file_metadata_ref) = @_;
 	foreach my $file (@$files_ref) {
-        next if -d $file;
+		next if -d $file && !(exists $types_chosen_hash{'d'});
+		next if -f $file && !(exists $types_chosen_hash{'f'});
 
 		if ($opt_no_dereference) {
 			(undef,                          # device number
@@ -462,6 +472,13 @@ sub main {
 	if ($opt_dereference && $opt_no_dereference) {
 		log_fatal { "Can't set both '--dereference' and '--no-dereference'." };
 		exit 1;
+	}
+
+	foreach my $chosen (@types_chosen) {
+		if (!exists $types_allowed_ref->{$chosen}) {
+			log_fatal { "$chosen isn't a valid --type option." };
+			exit 1;
+		}
 	}
 
 	# Initialize variables
