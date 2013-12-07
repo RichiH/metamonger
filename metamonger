@@ -419,8 +419,6 @@ sub write_metadata_to_fs {
 	$file_metadata_config{'config'} = delete $file_metadata_ref->{'config'};
 	$error_count += diff_hashes($file_metadata_ref, $metadata_fs_ref, $DIFF_ACTIONS{'set_metadata_on_file'}, $no_act);
 
-
-
 	# TODO chown for ?id
 	#      check if we are root and error out if we are not
 
