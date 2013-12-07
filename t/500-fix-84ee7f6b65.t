@@ -40,7 +40,7 @@ eval {
 };
 die $@ if $@;
 
-system ('./metamonger --save');
+system ('./metamonger save');
 die $? if $?;
 
 eval {

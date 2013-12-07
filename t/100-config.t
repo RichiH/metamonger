@@ -35,7 +35,7 @@ die $@ if $@;
 utime 1337, 42, '001';
 chmod (775, '001');
 
-system ('./metamonger --save 001');
+system ('./metamonger save 001');
 die $? if $?;
 
 eval {
@@ -62,7 +62,7 @@ die $@ if $@;
 
 rm_f $STORAGE;
 
-system ("./metamonger --save 001 --config $CONFIG");
+system ("./metamonger save 001 --config $CONFIG");
 die $? if $?;
 
 eval {

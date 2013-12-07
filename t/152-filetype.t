@@ -30,7 +30,7 @@ eval {
 };
 die $@ if $@;
 
-system ('./metamonger --save container --type=f');
+system ('./metamonger save container --type=f');
 
 open(my $storage_fh, "<", $STORAGE) or die $!;
 my $metadata_ref = from_json(do {local $/; <$storage_fh>}, {relaxed=>0});
@@ -46,7 +46,7 @@ ok !$metadata{'metadata'}{'container/folder'};
 
 system ("rm $STORAGE");
 
-system ('./metamonger --save container');
+system ('./metamonger save container');
 
 open($storage_fh, "<", $STORAGE) or die $!;
 $metadata_ref = from_json(do {local $/; <$storage_fh>}, {relaxed=>0});
@@ -62,7 +62,7 @@ ok !$metadata{'metadata'}{'container/folder'};
 
 system ("rm $STORAGE");
 
-system ('./metamonger --save container --type=d');
+system ('./metamonger save container --type=d');
 
 open($storage_fh, "<", $STORAGE) or die $!;
 $metadata_ref = from_json(do {local $/; <$storage_fh>}, {relaxed=>0});
@@ -78,7 +78,7 @@ ok $metadata{'metadata'}{'container/folder'};
 
 system ("rm $STORAGE");
 
-system ('./metamonger --save container --type=fd');
+system ('./metamonger save container --type=fd');
 
 open($storage_fh, "<", $STORAGE) or die $!;
 $metadata_ref = from_json(do {local $/; <$storage_fh>}, {relaxed=>0});
@@ -94,7 +94,7 @@ ok $metadata{'metadata'}{'container/folder'};
 
 system ("rm $STORAGE");
 
-system ('./metamonger --save container --type=df');
+system ('./metamonger save container --type=df');
 
 open($storage_fh, "<", $STORAGE) or die $!;
 $metadata_ref = from_json(do {local $/; <$storage_fh>}, {relaxed=>0});
@@ -108,10 +108,10 @@ ok $metadata{'metadata'}{'container/file'};
 ok $metadata{'metadata'}{'container'};
 ok $metadata{'metadata'}{'container/folder'};
 
-my $output = `./metamonger --save container --type=Q 2>&1`;
+my $output = `./metamonger save container --type=Q 2>&1`;
 ok $output =~ /Q isn't a valid --type option/;
 
-$output = `./metamonger --save container --type=Qf 2>&1`;
+$output = `./metamonger save container --type=Qf 2>&1`;
 ok $output =~ /Q isn't a valid --type option/;
 
 system ('rm -rf ../etc');

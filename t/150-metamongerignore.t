@@ -36,7 +36,7 @@ die $@ if $@;
 
 copy ("../files/metamongerignore1", "./.metamongerignore");
 
-system ("./metamonger --save dira");
+system ("./metamonger save dira");
 
 open(my $storage_fh, "<", $STORAGE) or die $!;
 my $metadata_ref = from_json(do {local $/; <$storage_fh>}, {relaxed=>0});
@@ -54,7 +54,7 @@ rm_f $STORAGE;
 
 copy ("../files/metamongerignore2", "./.metamongerignore");
 
-system ("./metamonger --save dira");
+system ("./metamonger save dira");
 
 open($storage_fh, "<", $STORAGE) or die $!;
 $metadata_ref = from_json(do {local $/; <$storage_fh>}, {relaxed=>0});
@@ -71,7 +71,7 @@ rm_f $STORAGE;
 
 copy ("../files/metamongerignore3", "./.metamongerignore");
 
-system ("./metamonger --save dira");
+system ("./metamonger save dira");
 
 open($storage_fh, "<", $STORAGE) or die $!;
 $metadata_ref = from_json(do {local $/; <$storage_fh>}, {relaxed=>0});
@@ -88,7 +88,7 @@ rm_f $STORAGE;
 
 copy ("../files/metamongerignore4", "./.metamongerignore");
 
-system ("./metamonger --save dira");
+system ("./metamonger save dira");
 
 open($storage_fh, "<", $STORAGE) or die $!;
 $metadata_ref = from_json(do {local $/; <$storage_fh>}, {relaxed=>0});

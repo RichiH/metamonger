@@ -14,7 +14,7 @@ chdir 't/etc/' or die $!;
 
 # Config = /dev/null so we don't use ~/.config/metamonger,
 # or /etc/metamonger/config.
-system ('./metamonger --save 001 002 003 004 --config=../files/config_empty');
+system ('./metamonger save 001 002 003 004 --config=../files/config_empty');
 die $? if $?;
 
 eval {
@@ -26,7 +26,7 @@ die $@ if $@;
 
 chmod 777, '004';
 
-system ('./metamonger --restore');
+system ('./metamonger restore');
 
 my (undef,                          # device number
     undef,                          # inode number
