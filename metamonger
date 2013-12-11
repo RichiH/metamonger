@@ -554,8 +554,7 @@ sub main {
 
 		handle_untracked ( $metadata_fs_ref, $file_metadata_ref, $opt_untracked );
 	} else {
-		log_trace {'Did not enter any other routine; printing help and exiting'};
-		help(1);
+		log_error {"$0: '$command' is not a $0 command. See '$0 help'"};
 	}
 
 	log_error { "There were a total of $error_count non-fatal errors"} if $error_count;
