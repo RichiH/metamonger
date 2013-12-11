@@ -467,11 +467,8 @@ sub main {
 
 	# Initialize variables
 	my $error_count = 0;
-
+	my $command     = '';
 	my @matches;
-
-	my @file_search;
-	my $command ='';
 
 	# Match ARGV to files, directories and features
 	if (@ARGV) {
