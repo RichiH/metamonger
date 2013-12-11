@@ -473,16 +473,16 @@ sub main {
 	my @matches;
 
 	my @file_search;
-	my $call_feature ='';
+	my $command ='';
 
 	# Match ARGV to files, directories and features
 	if (@ARGV) {
-		$call_feature = shift @ARGV;
+		$command = shift @ARGV;
 
 		# Avoid doing extra work if we are running cheap code
-		if ($call_feature eq 'help') {
+		if ($command eq 'help') {
 			help(0);
-		} elsif ($call_feature eq 'version') {
+		} elsif ($command eq 'version') {
 			version;
 		}
 
@@ -528,17 +528,17 @@ sub main {
 	# only directly changed options should trump that
 	#TODO read potential command lines options
 
-	if      ( $call_feature eq 'save' ) {
+	if      ( $command eq 'save' ) {
 		# save live data to file
 		$file_metadata_ref = get_file_metadata_from_fs($files_ref, $file_metadata_ref);
 		write_metadata_to_storage($file_metadata_ref, $opt_no_act);
-	} elsif ( $call_feature eq 'restore' ) {
+	} elsif ( $command eq 'restore' ) {
 		# restore data from file to live
 		my %metadata_fs;
 		my $metadata_fs_ref = \%metadata_fs;
 		$metadata_fs_ref = get_file_metadata_from_fs($files_ref, $metadata_fs_ref);
 		$error_count += write_metadata_to_fs($metadata_fs_ref, $file_metadata_ref, $opt_no_act);
-	} elsif ( $call_feature eq 'diff' ) {
+	} elsif ( $command eq 'diff' ) {
 		# diff file against live data
 		my %metadata_fs;
 
@@ -546,7 +546,7 @@ sub main {
 		$metadata_fs_ref = get_file_metadata_from_fs($files_ref, $metadata_fs_ref);
 
 		diff_data ( $metadata_fs_ref, $file_metadata_ref, $opt_no_act );
-	} elsif ( $call_feature eq 'status' ) {
+	} elsif ( $command eq 'status' ) {
 		my %metadata_fs;
 
 		my $metadata_fs_ref = \%metadata_fs;
