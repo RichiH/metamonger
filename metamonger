@@ -495,8 +495,8 @@ sub main {
 			@matches = map glob($_), '*';
 		}
 	} else {
-		log_trace {'Did not enter any other routine; printing help and exiting'};
-		help(1);
+		log_trace {'Called without command or options; print help and exit 0'};
+		help(0);
 	}
 
 	log_trace { "globbing matches:\n" . Dumper @matches };
