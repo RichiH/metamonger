@@ -344,7 +344,10 @@ sub set_defaults {
 sub set_metadata_on_file {
 	my ($file_name, $file_metadata_ref, $fs_ref, $diff_ref, $no_act) = @_;
 
+	# Skip processing if the file has no stored metadata in our storage
 	return 0 if (!keys $file_metadata_ref);
+	# Skip processing unless the file we are looking at has been selected for restoration
+	return 0 if (!keys $fs_ref);
 
 	my $error_count = 0;
 	my $written_atime = 0;
