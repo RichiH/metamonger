@@ -353,7 +353,9 @@ sub set_metadata_on_file {
 	my $written_atime = 0;
 	my $written_mtime = 0;
 
-	print "Act on $file_name:\n";
+	if ( $no_act ) {
+		print "Would act on $file_name:\n";
+	}
 
 	# Sort the hash as 5.18 made static tests fail; yes, this is an ugly hack that eats performance
 	for my $metadata_name (sort keys $diff_ref) {

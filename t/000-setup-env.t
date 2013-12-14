@@ -31,8 +31,19 @@ lives_ok {
 	touch '004';
 } 'touching files succeeds';
 
+system ("mkdir -p dira/");
+die $? if $?;
+
+lives_ok {
+	touch 'dira/001';
+	touch 'dira/002';
+} 'touching files succeeds';
+
 ok utime (1337, 42, '001'), 'utime succeeds';
 lives_ok { chmod 775, '001' } 'Chmod succeeds';
+
+ok utime (42, 42, 'dira/001'), 'utime succeeds';
+ok utime (42, 42, 'dira/002'), 'utime succeeds';
 
 ok utime (-1, 9001, '002'), 'utime on 002 succeeds';
 ok utime (9002, -1, '003'), 'utime on 003 succeeds';

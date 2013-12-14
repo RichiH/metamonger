@@ -35,6 +35,6 @@ ok $metadata{'metadata'}{'001'}{'atime'} == 1337;
 
 ok $metadata{'metadata'}{'001'}{'mode'} eq '0775';
 
-ok !$metadata{'metadata'}{'shoudlnt_save'}, 'directories are ignored.';
+ok !$metadata{'metadata'}{'shouldnt_save'}, 'directories are ignored.';
 
 done_testing;
