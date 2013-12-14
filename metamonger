@@ -87,13 +87,13 @@ sub diff_data {
 }
 
 sub diff_hashes {
-	my ($a, $b, $execute_sub, $no_act) = @_;
+	my ($a, $b, $execute_sub) = @_;
 	my $error_count = 0;
 	my %diff_hash = %{ diff( $a, $b ) };
 	for my $file_name (keys $diff_hash{'metadata'}) {
 		next unless defined $diff_hash{'metadata'}{$file_name};
 
-		$error_count += &$execute_sub($file_name, \%{$a->{'metadata'}{$file_name}}, \%{$b->{'metadata'}{$file_name}}, \%{$diff_hash{'metadata'}{$file_name}}, $no_act);
+		$error_count += &$execute_sub($file_name, \%{$a->{'metadata'}{$file_name}}, \%{$b->{'metadata'}{$file_name}}, \%{$diff_hash{'metadata'}{$file_name}});
 	}
 }
 
@@ -342,7 +342,7 @@ sub set_defaults {
 }
 
 sub set_metadata_on_file {
-	my ($file_name, $file_metadata_ref, $fs_ref, $diff_ref, $no_act) = @_;
+	my ($file_name, $file_metadata_ref, $fs_ref, $diff_ref) = @_;
 
 	# Skip processing if the file has no stored metadata in our storage
 	return 0 if (!keys $file_metadata_ref);
@@ -353,7 +353,7 @@ sub set_metadata_on_file {
 	my $written_atime = 0;
 	my $written_mtime = 0;
 
-	if ( $no_act ) {
+	if ( $opt_no_act ) {
 		print "Would act on $file_name:\n";
 	}
 
@@ -367,7 +367,7 @@ sub set_metadata_on_file {
 			my $atime = $diff_ref->{'atime'} || $file_metadata_ref->{'atime'} || $fs_ref->{'atime'} || -1;
 			log_trace{'Stored mtime, read atime from FS: ' . $atime};
 
-			if (!$no_act) {
+			if (!$opt_no_act) {
 				utime($atime, $metadata_value, $file_name) or do {
 					warn "$0: couldn't set atime on '$file_name': $!";
 					$error_count++;
@@ -385,7 +385,7 @@ sub set_metadata_on_file {
 			my $mtime = $diff_ref->{'mtime'} || $file_metadata_ref->{'mtime'} || $fs_ref->{'mtime'} || -1;
 			log_trace{'Stored atime, read mtime from FS: ' . $mtime};
 
-			if (!$no_act) {
+			if (!$opt_no_act) {
 				utime($metadata_value, $mtime, $file_name) or do {
 					warn "$0: couldn't set atime on '$file_name': $!";
 					$error_count++;
@@ -399,7 +399,7 @@ sub set_metadata_on_file {
 		}
 
 		if ($metadata_name eq 'mode') {
-			if (!$no_act) {
+			if (!$opt_no_act) {
 				chmod $metadata_value, $file_name;
 			} else {
 				print "Would set mode to $metadata_value\n";
@@ -416,13 +416,13 @@ sub version {
 }
 
 sub write_metadata_to_fs {
-	my ($metadata_fs_ref, $file_metadata_ref, $no_act) = @_;
+	my ($metadata_fs_ref, $file_metadata_ref) = @_;
 	log_trace { '%file_metadata: ' . Dumper $file_metadata_ref };
 	my $error_count = 0;
 	#TODO better names
 	my %file_metadata_config;
 	$file_metadata_config{'config'} = delete $file_metadata_ref->{'config'};
-	$error_count += diff_hashes($file_metadata_ref, $metadata_fs_ref, $DIFF_ACTIONS{'set_metadata_on_file'}, $no_act);
+	$error_count += diff_hashes($file_metadata_ref, $metadata_fs_ref, $DIFF_ACTIONS{'set_metadata_on_file'});
 
 	# TODO chown for ?id
 	#      check if we are root and error out if we are not
@@ -431,7 +431,7 @@ sub write_metadata_to_fs {
 }
 
 sub write_metadata_to_storage {
-	my ($file_metadata_ref, $no_act) = @_;
+	my ($file_metadata_ref) = @_;
 	my $json = to_json($file_metadata_ref, {canonical => 1});
 	$json =~ s/"metadata":{/"metadata":{\n/;
 	$json =~ s/},/},\n/g;
@@ -441,7 +441,7 @@ sub write_metadata_to_storage {
 		$json =~ s/}}}/}\n}}\n/g;
 	}
 
-	if ( !$no_act ) {
+	if ( !$opt_no_act ) {
 		open(my $storage_fh, ">", $STORAGE) or do {
 			log_fatal { "Can not open '$STORAGE': $!" };
 			die;
@@ -531,13 +531,13 @@ sub main {
 	if      ( $command eq 'save' ) {
 		# save live data to file
 		$file_metadata_ref = get_file_metadata_from_fs($files_ref, $file_metadata_ref);
-		write_metadata_to_storage($file_metadata_ref, $opt_no_act);
+		write_metadata_to_storage($file_metadata_ref);
 	} elsif ( $command eq 'restore' ) {
 		# restore data from file to live
 		my %metadata_fs;
 		my $metadata_fs_ref = \%metadata_fs;
 		$metadata_fs_ref = get_file_metadata_from_fs($files_ref, $metadata_fs_ref);
-		$error_count += write_metadata_to_fs($metadata_fs_ref, $file_metadata_ref, $opt_no_act);
+		$error_count += write_metadata_to_fs($metadata_fs_ref, $file_metadata_ref);
 	} elsif ( $command eq 'diff' ) {
 		# diff file against live data
 		my %metadata_fs;
@@ -545,7 +545,7 @@ sub main {
 		my $metadata_fs_ref = \%metadata_fs;
 		$metadata_fs_ref = get_file_metadata_from_fs($files_ref, $metadata_fs_ref);
 
-		diff_data ( $metadata_fs_ref, $file_metadata_ref, $opt_no_act );
+		diff_data ( $metadata_fs_ref, $file_metadata_ref );
 	} elsif ( $command eq 'status' ) {
 		my %metadata_fs;
 
