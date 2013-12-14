@@ -374,8 +374,7 @@ sub set_metadata_on_file {
 					warn "$0: couldn't set atime on '$file_name': $!";
 					$error_count++;
 				};
-			}
-			else {
+			} else {
 				print "Would set atime to $atime\n";
 				print "Would set mtime to $metadata_value\n";
 			}
