@@ -296,11 +296,11 @@ sub help {
 	--dereference|-L    Always follow symlinks (default)
 	--no-dereference|-P Never follow symlinks
 
-	--no-act|n          Do not act; print results only
+	--no-act|-n         Do not act; print results only
 	--untracked         Show untracked files
 	--untracked<=no/normal/all>
 
-	--verbose|v         Print verbose messages
+	--verbose|-v        Print verbose messages
 
 ";
 	exit $ret;
