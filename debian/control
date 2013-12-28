@@ -24,7 +24,7 @@ Architecture: all
 Depends: ${misc:Depends},
          ${perl:Depends},
          libconfig-simple-perl,
-               libfile-lchown-perl,
+         libfile-lchown-perl,
          libfile-util-perl,
          libhash-merge-simple-perl,
          libjson-perl,
