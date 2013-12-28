@@ -15,6 +15,7 @@ requires 'Data::Dumper';
 requires 'File::Copy';
 requires 'File::Util';
 requires 'Getopt::Long';
+requires 'Hash::Diff';
 requires 'Hash::Merge::Simple';
 requires 'JSON';
 requires 'Log::Contextual';

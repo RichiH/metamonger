@@ -14,7 +14,7 @@ chdir 't/etc/' or die $!;
 
 # Config = /dev/null so we don't use ~/.config/metamonger,
 # or /etc/metamonger/config.
-system ('./metamonger --save 001 --config=../files/config_empty');
+system ('./metamonger save 001 --config=../files/config_empty');
 die $? if $?;
 
 my $STORAGE = '.metamonger';
@@ -34,5 +34,7 @@ ok $metadata{'metadata'}{'001'}{'mtime'} == 42;
 ok $metadata{'metadata'}{'001'}{'atime'} == 1337;
 
 ok $metadata{'metadata'}{'001'}{'mode'} eq '0775';
+
+ok !$metadata{'metadata'}{'shouldnt_save'}, 'directories are ignored.';
 
 done_testing;

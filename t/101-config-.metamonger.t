@@ -20,7 +20,7 @@ if (!-e 'metamonger') {
 }
 
 # This check depends on the '.metamonger' from t/100-config.t
-system ("./metamonger --save 001 --config .metamonger 2>/dev/null");
+system ("./metamonger save 001 --config .metamonger 2>/dev/null");
 ok $?;
 
 rm_rf '../etc';

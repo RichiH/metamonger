@@ -21,38 +21,52 @@ use Shell::Command;
 my $VERSION = '0.20130907';
 my $STORAGE_VERSION = '0';
 my $STORAGE = '.metamonger';
+my $IGNORE  = '.metamongerignore';
 
 # Allowed function references; required by `use strict`
 my %DIFF_ACTIONS = (
 	'print_metadata'       => \&print_metadata,
 	'set_metadata_on_file' => \&set_metadata_on_file,
-	'print_diff'          => \&print_diff,
+	'print_diff'           => \&print_diff,
+);
+
+# $opt_untracked=='' should default to $opt_untracked=='all' for now
+my %UNTRACKED_ACTIONS = (
+	''       => \&print_untracked_all,
+	'all'    => \&print_untracked_all,
 );
 
 # Getopt::Long
-my $opt_config  = '';
-my $opt_debug   = '';
-my $opt_diff    = '';
-my $opt_file    = '';
-my $opt_help    = '';
-my $opt_no_act  = '';
-my $opt_restore = '';
-my $opt_save    = '';
-my $opt_verbose = '';
-my $opt_version = '';
+my $opt_config         = '';
+my $opt_debug          = '';
+my $opt_dereference    = '';
+my $opt_file           = '';
+my $opt_no_act         = '';
+my $opt_no_dereference = '';
+my $opt_type           = 'f';
+# $opt_untracked=undef so we can test for !defined $opt_untracked
+# This enables us to special case $opt_untracked=='' and set a default
+my $opt_untracked      = undef;
+my $opt_verbose        = '';
 
 GetOptions (
-	'config|c=s' => \$opt_config,
-	'debug'      => \$opt_debug,
-	'diff|d'     => \$opt_diff,
-	'file|f=s'   => \$opt_file,
-	'help|h'     => \$opt_help,
-	'no-act|n'   => \$opt_no_act,
-	'restore|r'  => \$opt_restore,
-	'save|s'     => \$opt_save,
-	'verbose|v'  => \$opt_verbose,
-	'version'    => \$opt_version,
+	'config|c=s'       => \$opt_config,
+	'debug'            => \$opt_debug,
+	'dereference|L'    => \$opt_dereference,
+	'file|f=s'         => \$opt_file,
+	'no-act|n'         => \$opt_no_act,
+	'no-dereference|P' => \$opt_no_dereference,
+	'type|t:s'         => \$opt_type,
+	'untracked:s'      => \$opt_untracked,
+	'verbose|v'        => \$opt_verbose,
 ) || help(1);
+
+my @types_chosen  = split //, $opt_type;
+my $types_allowed_ref   = {
+						'd' => 1,
+						'f' => 1,
+					};
+my %types_chosen_hash   = map { $_ => 1 } @types_chosen;
 
 # Set verbosity level and set up logger
 if ($opt_debug) {
@@ -73,28 +87,63 @@ sub diff_data {
 }
 
 sub diff_hashes {
-	my ($a, $b, $execute_sub, $no_act) = @_;
+	my ($a, $b, $execute_sub) = @_;
 	my $error_count = 0;
 	my %diff_hash = %{ diff( $a, $b ) };
-	for my $file_name (keys $diff_hash{'metadata'}) {
+
+	# Sort the hash as the output is for human consumption
+	for my $file_name (sort keys $diff_hash{'metadata'}) {
 		next unless defined $diff_hash{'metadata'}{$file_name};
 
-		$error_count += &$execute_sub($file_name, \%{$a->{'metadata'}{$file_name}}, \%{$b->{'metadata'}{$file_name}}, \%{$diff_hash{'metadata'}{$file_name}}, $no_act);
+		$error_count += &$execute_sub($file_name, \%{$a->{'metadata'}{$file_name}}, \%{$b->{'metadata'}{$file_name}}, \%{$diff_hash{'metadata'}{$file_name}});
 	}
 }
+
+sub handle_untracked {
+	my ($fs_ref, $file_metadata_ref, $untracked_mode) = @_;
+
+	my $sub = $UNTRACKED_ACTIONS{$untracked_mode};
+
+	if (!$sub) {
+		log_fatal { "--untracked=$untracked_mode: no such mode! " };
+		exit 1;
+	}
+
+	&$sub ($fs_ref, $file_metadata_ref);
+}
+
 
 sub print_diff {
 	my ($file_name, $fs_ref, $file_metadata_ref, $diff_ref) = @_;
 
 	return 0 if !keys $file_metadata_ref;
 
-	foreach my $metadata ( keys $diff_ref ) {
+	# Sort the hash as 5.18 made static tests fail; yes, this is an ugly hack that eats performance
+	foreach my $metadata (sort keys $diff_ref ) {
 		next if !$file_metadata_ref->{$metadata};
 
 		print "file: $file_name: $metadata: $file_metadata_ref->{$metadata} ==> $diff_ref->{$metadata}\n";
 	}
 
 	return 0;
+}
+
+sub print_untracked_all {
+	my ($fs_ref, $file_metadata_ref) = @_;
+
+	return if (!$fs_ref->{metadata});
+
+	my @untracked_files;
+
+	foreach my $file (keys $fs_ref->{metadata}) {
+		if (!$file_metadata_ref->{metadata}{$file}) {
+			push @untracked_files, $file;
+		}
+	}
+
+	foreach my $file (@untracked_files) {
+		print $file . "\n";
+	}
 }
 
 sub get_metadata_from_storage {
@@ -125,20 +174,40 @@ sub get_metadata_from_storage {
 sub get_file_metadata_from_fs {
 	my ($files_ref, $file_metadata_ref) = @_;
 	foreach my $file (@$files_ref) {
-		(undef,                          # device number
-		 undef,                          # inode number
-		 $file_metadata_ref->{metadata}{$file}{mode},
-		 undef,                          # number of (hard) links
-		 $file_metadata_ref->{metadata}{$file}{uid},
-		 $file_metadata_ref->{metadata}{$file}{gid},
-		 undef,                          # device identifier
-		 undef,                          # total size
-		 $file_metadata_ref->{metadata}{$file}{atime},
-		 $file_metadata_ref->{metadata}{$file}{mtime},
-		 undef,                          # ctime; can not be set on Unix
-		 undef,                          # preferred block size
-		 undef,                          # blocks allocated
-		) = lstat($file) or log_fatal {"Could not stat '$file': $!"};
+		next if -d $file && !(exists $types_chosen_hash{'d'});
+		next if -f $file && !(exists $types_chosen_hash{'f'});
+
+		if ($opt_no_dereference) {
+			(undef,                          # device number
+			 undef,                          # inode number
+			 $file_metadata_ref->{metadata}{$file}{mode},
+			 undef,                          # number of (hard) links
+			 $file_metadata_ref->{metadata}{$file}{uid},
+			 $file_metadata_ref->{metadata}{$file}{gid},
+			 undef,                          # device identifier
+			 undef,                          # total size
+			 $file_metadata_ref->{metadata}{$file}{atime},
+			 $file_metadata_ref->{metadata}{$file}{mtime},
+			 undef,                          # ctime; can not be set on Unix
+			 undef,                          # preferred block size
+			 undef,                          # blocks allocated
+			) = lstat($file) or log_fatal {"Could not stat '$file': $!"};
+		} else {
+			(undef,                          # device number
+			 undef,                          # inode number
+			 $file_metadata_ref->{metadata}{$file}{mode},
+			 undef,                          # number of (hard) links
+			 $file_metadata_ref->{metadata}{$file}{uid},
+			 $file_metadata_ref->{metadata}{$file}{gid},
+			 undef,                          # device identifier
+			 undef,                          # total size
+			 $file_metadata_ref->{metadata}{$file}{atime},
+			 $file_metadata_ref->{metadata}{$file}{mtime},
+			 undef,                          # ctime; can not be set on Unix
+			 undef,                          # preferred block size
+			 undef,                          # blocks allocated
+			) = stat($file) or log_fatal {"Could not stat '$file': $!"};
+		}
 
 		$file_metadata_ref->{metadata}{$file}{mode} = sprintf ("%04o", $file_metadata_ref->{metadata}{$file}{mode} & 07777);
 
@@ -155,22 +224,85 @@ sub get_file_metadata_from_fs {
 	return $file_metadata_ref;
 }
 
+sub get_files {
+	my ($files_ref, $ignore_ref) = @_;
+
+	my @return;
+	my @files = @$files_ref;
+
+	foreach my $file (@files) {
+		my $file_util = File::Util->new();
+		next if $ignore_ref->{$file};
+
+		# Recurse through directories, add files directly
+		if (-d $file) {
+			next if $ignore_ref->{"$file/"};
+
+			my @subfiles = map $file_util->list_dir($_, qw/--with-paths --no-fsdots/), $file;
+
+			if (scalar (@subfiles)) {
+				my $sub_ref = get_files (\@subfiles, $ignore_ref);
+				push @return, @$sub_ref;
+			}
+
+			push(@return, $file);
+		} elsif (-f $file) {
+			push(@return, $file);
+		}
+	}
+
+	return \@return;
+}
+
+sub get_ignored_files {
+	my %ignored;
+
+	return \%ignored if !-f $IGNORE;
+
+	open (my $ignore_fh, '<', $IGNORE);
+
+	while ( my $line = <$ignore_fh> ) {
+		chomp $line;
+
+		my @matched_files = glob $line;
+
+		foreach my $file (@matched_files) {
+			$ignored{$file} = 1;
+		}
+	}
+
+	close $ignore_fh;
+
+	return \%ignored;
+}
+
 sub help {
 	#TODO Switch to POD
 	#TODO use Getopt::Long qw/:config auto_help/
 	my ($ret)=@_;
 	print "usage: $0 <args> <glob>
 
-	--config     Sets config file. Defaults to ~/.config/metamonger.
-	--debug      Print debug messages
-	--diff|d     Diff between stored and live metadata
-	--file|f     Specify storage file
-	--help|h     Display this help
-	--no-act|n   Do not act; print results only
-	--restore|r  Restore metadata to file system
-	--save|s     Write metadata to file
-	--verbose|v  Print verbose messages
-	--version    Display version information
+	Arguments:
+	diff                Diff between stored and live metadata
+	help                Display this help
+	restore             Restore metadata to file system
+	save                Write metadata to file
+	status              Show status
+	version             Display version information
+
+	Options:
+
+	--config            Specify config file
+	--debug             Print debug messages
+	--dereference|L     Always follow symlinks (default)
+	--no-dereference|P  Never follow symlinks
+
+	--no-act|n          Do not act; print results only
+	--untracked         Show untracked files
+	--untracked<=no/normal/all>
+
+	--verbose|v         Print verbose messages
+
 ";
 	exit $ret;
 }
@@ -212,17 +344,23 @@ sub set_defaults {
 }
 
 sub set_metadata_on_file {
-	my ($file_name, $file_metadata_ref, $fs_ref, $diff_ref, $no_act) = @_;
+	my ($file_name, $file_metadata_ref, $fs_ref, $diff_ref) = @_;
 
+	# Skip processing if the file has no stored metadata in our storage
 	return 0 if (!keys $file_metadata_ref);
+	# Skip processing unless the file we are looking at has been selected for restoration
+	return 0 if (!keys $fs_ref);
 
 	my $error_count = 0;
 	my $written_atime = 0;
 	my $written_mtime = 0;
 
-	print "Act on $file_name:\n";
+	if ( $opt_no_act ) {
+		print "Would act on $file_name:\n";
+	}
 
-	for my $metadata_name (keys $diff_ref) {
+	# Sort the hash as 5.18 made static tests fail; yes, this is an ugly hack that eats performance
+	for my $metadata_name (sort keys $diff_ref) {
 		next if !defined $file_metadata_ref->{$metadata_name};
 
 		my $metadata_value = $diff_ref->{$metadata_name};
@@ -231,13 +369,12 @@ sub set_metadata_on_file {
 			my $atime = $diff_ref->{'atime'} || $file_metadata_ref->{'atime'} || $fs_ref->{'atime'} || -1;
 			log_trace{'Stored mtime, read atime from FS: ' . $atime};
 
-			if (!$no_act) {
+			if (!$opt_no_act) {
 				utime($atime, $metadata_value, $file_name) or do {
 					warn "$0: couldn't set atime on '$file_name': $!";
 					$error_count++;
 				};
-			}
-			else {
+			} else {
 				print "Would set atime to $atime\n";
 				print "Would set mtime to $metadata_value\n";
 			}
@@ -249,7 +386,7 @@ sub set_metadata_on_file {
 			my $mtime = $diff_ref->{'mtime'} || $file_metadata_ref->{'mtime'} || $fs_ref->{'mtime'} || -1;
 			log_trace{'Stored atime, read mtime from FS: ' . $mtime};
 
-			if (!$no_act) {
+			if (!$opt_no_act) {
 				utime($metadata_value, $mtime, $file_name) or do {
 					warn "$0: couldn't set atime on '$file_name': $!";
 					$error_count++;
@@ -263,7 +400,7 @@ sub set_metadata_on_file {
 		}
 
 		if ($metadata_name eq 'mode') {
-			if (!$no_act) {
+			if (!$opt_no_act) {
 				chmod $metadata_value, $file_name;
 			} else {
 				print "Would set mode to $metadata_value\n";
@@ -280,27 +417,22 @@ sub version {
 }
 
 sub write_metadata_to_fs {
-	my ($metadata_fs_ref, $file_metadata_ref, $no_act) = @_;
+	my ($metadata_fs_ref, $file_metadata_ref) = @_;
 	log_trace { '%file_metadata: ' . Dumper $file_metadata_ref };
 	my $error_count = 0;
 	#TODO better names
 	my %file_metadata_config;
 	$file_metadata_config{'config'} = delete $file_metadata_ref->{'config'};
-	$error_count += diff_hashes($file_metadata_ref, $metadata_fs_ref, $DIFF_ACTIONS{'set_metadata_on_file'}, $no_act);
+	$error_count += diff_hashes($file_metadata_ref, $metadata_fs_ref, $DIFF_ACTIONS{'set_metadata_on_file'});
 
-
-
-	# TODO utimes for ?time
 	# TODO chown for ?id
-	# TODO chmod for ?mode
-	#      read as integer, not string
 	#      check if we are root and error out if we are not
 
 	return $error_count;
 }
 
 sub write_metadata_to_storage {
-	my ($file_metadata_ref, $no_act) = @_;
+	my ($file_metadata_ref) = @_;
 	my $json = to_json($file_metadata_ref, {canonical => 1});
 	$json =~ s/"metadata":{/"metadata":{\n/;
 	$json =~ s/},/},\n/g;
@@ -310,7 +442,7 @@ sub write_metadata_to_storage {
 		$json =~ s/}}}/}\n}}\n/g;
 	}
 
-	if ( !$no_act ) {
+	if ( !$opt_no_act ) {
 		open(my $storage_fh, ">", $STORAGE) or do {
 			log_fatal { "Can not open '$STORAGE': $!" };
 			die;
@@ -326,37 +458,53 @@ sub write_metadata_to_storage {
 }
 
 sub main {
+	# Error out if both $opt_dereference and $opt_no_dereference are set
+	if ($opt_dereference && $opt_no_dereference) {
+		log_fatal { "Can't set both '--dereference' and '--no-dereference'." };
+		exit 1;
+	}
 
-	# Avoid doing extra work if we are running cheap code
-	if ($opt_help) {
-		help(0);
-	} elsif ($opt_version) {
-		version;
+	foreach my $chosen (@types_chosen) {
+		if (!exists $types_allowed_ref->{$chosen}) {
+			log_fatal { "$chosen isn't a valid --type option." };
+			exit 1;
+		}
 	}
 
 	# Initialize variables
 	my $error_count = 0;
-
-	# Match ARGV to files and directories
+	my $command     = '';
 	my @matches;
+
+	# Match ARGV to files, directories and features
 	if (@ARGV) {
-		@matches = map glob($_), @ARGV;
-		log_error { "$0: no matches found for '@ARGV'"} unless grep -e $_, @matches;
+		$command = shift @ARGV;
+
+		# Avoid doing extra work if we are running cheap code
+		if ($command eq 'help') {
+			help(0);
+		} elsif ($command eq 'version') {
+			version;
+		}
+
+		if (@ARGV) {
+			@matches = map glob($_), @ARGV;
+			log_error { "$0: no matches found for '@ARGV'"} unless grep -e $_, @matches;
+		} else {
+			# Default to '*' if we don't have any files to operate one.
+			# Using '.' here would pull in dotfiles via list_dir()
+			@matches = map glob($_), '*';
+		}
 	} else {
-		# Default to '*' if we don't have any files to operate one.
-		# Using '.' here would pull in dotfiles via list_dir()
-		@matches = map glob($_), '*';
+		log_trace {'Called without command or options; print help and exit 0'};
+		help(0);
 	}
+
 	log_trace { "globbing matches:\n" . Dumper @matches };
 
-	# Recurse through directories, add files directly
-	my @files;
-	foreach my $match (@matches) {
-		my $file_util = File::Util->new();
+	my $ignore_ref = get_ignored_files;
 
-		push (@files, map $file_util->list_dir($_, '--recurse'), $match) if -d $match;
-		push(@files, $match) if -f $match;
-	}
+	my $files_ref = get_files(\@matches, $ignore_ref);
 
 	# It's likely that we will need this data so let's read it
 	my %file_metadata;
@@ -381,27 +529,33 @@ sub main {
 	# only directly changed options should trump that
 	#TODO read potential command lines options
 
-	if      (!$opt_diff && !$opt_restore &&  $opt_save) {
+	if      ( $command eq 'save' ) {
 		# save live data to file
-		$file_metadata_ref = get_file_metadata_from_fs(\@files, $file_metadata_ref);
-		write_metadata_to_storage($file_metadata_ref, $opt_no_act);
-	} elsif (!$opt_diff &&  $opt_restore && !$opt_save) {
+		$file_metadata_ref = get_file_metadata_from_fs($files_ref, $file_metadata_ref);
+		write_metadata_to_storage($file_metadata_ref);
+	} elsif ( $command eq 'restore' ) {
 		# restore data from file to live
 		my %metadata_fs;
 		my $metadata_fs_ref = \%metadata_fs;
-		$metadata_fs_ref = get_file_metadata_from_fs(\@files, $metadata_fs_ref);
-		$error_count += write_metadata_to_fs($metadata_fs_ref, $file_metadata_ref, $opt_no_act);
-	} elsif ( $opt_diff && !$opt_restore && !$opt_save) {
+		$metadata_fs_ref = get_file_metadata_from_fs($files_ref, $metadata_fs_ref);
+		$error_count += write_metadata_to_fs($metadata_fs_ref, $file_metadata_ref);
+	} elsif ( $command eq 'diff' ) {
 		# diff file against live data
 		my %metadata_fs;
 
 		my $metadata_fs_ref = \%metadata_fs;
-		$metadata_fs_ref = get_file_metadata_from_fs(\@files, $metadata_fs_ref);
+		$metadata_fs_ref = get_file_metadata_from_fs($files_ref, $metadata_fs_ref);
 
-		diff_data ( $metadata_fs_ref, $file_metadata_ref, $opt_no_act );
+		diff_data ( $metadata_fs_ref, $file_metadata_ref );
+	} elsif ( $command eq 'status' ) {
+		my %metadata_fs;
+
+		my $metadata_fs_ref = \%metadata_fs;
+		$metadata_fs_ref = get_file_metadata_from_fs($files_ref, $metadata_fs_ref);
+
+		handle_untracked ( $metadata_fs_ref, $file_metadata_ref, $opt_untracked );
 	} else {
-		log_trace {'Did not enter any other routine; printing help and exiting'};
-		help(1);
+		log_error {"'$command' is not a $0 command. See '$0 help'"};
 	}
 
 	log_error { "There were a total of $error_count non-fatal errors"} if $error_count;

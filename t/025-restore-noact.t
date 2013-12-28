@@ -15,7 +15,7 @@ my $expected = do { local $/; <$fh>; };
 # Config = /dev/null so we don't use ~/.config/metamonger,
 # or /etc/metamonger/config.
 
-my $output = `./metamonger --config=../files/config_empty --restore --no-act`;
+my $output = `./metamonger --config=../files/config_empty restore --no-act`;
 
 ok $output eq $expected;
 
