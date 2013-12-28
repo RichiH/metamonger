@@ -1,0 +1,124 @@
+=head1 NAME
+
+metamonger - Save, diff, and restore metadata on files
+
+=head1 SYNOPSIS
+
+B<metamonger> [B<--config>|B<--debug>|B<-v>|B<--verbose>]
+
+B<metamonger> {B<diff> | B<restore> | B<save> | B<status>} [B<-L>|B<--derefence>|B<-P>|B<--no-dereference>]
+[B<-n>|B<--no-act>] [B<--untracked>=[I<no>|I<normal>|I<all>]] [I<<path>>]
+
+B<metamonger> {B<help> | B<version>}
+
+=head1 DESCRIPTION
+
+B<metamonger> allows you to store file metadata as returned by stat(1) in a text file.
+
+By default, it saves only mtime on files.
+Other attributes an
+
+=head2 Storage format
+
+The storage format is plain JSON, but reformatted so that every entry and all its data is on one line.
+This allows for easy integration with git(1), svn(1), and other VCS.
+It also allows for editing by hand should you so please.
+
+=head2 Name
+
+B<metamonger> stands for monging metadata.
+"meta" as in metadata;
+"monging" as in dealing with or selling something (fishmonger) and pushing for something unpleasant (warmonger).
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--config>
+
+Specify custom config file.
+
+=item B<--debug>
+
+Print debug messages.
+
+=item B<--dereference|-L>
+
+Always follow symlinks. This is the default.
+
+=item B<--no-dereference|-P>
+
+Never follow symlinks.
+
+=item B<--no-act|-n>
+
+Do not act; print results only.
+
+=item B<--untracked>
+
+Show untracked files: None, default, or all.
+
+=item B<--verbose|-v>
+
+Print verbose messages.
+
+=back
+
+=head1 COMMANDS
+
+=over 8
+
+=item B<diff> [I<path>]
+
+Diff between stored and live metadata.
+
+=item B<help>
+
+Display this help.
+
+=item B<restore> [I<path>]
+
+Restore metadata to file system.
+
+=item B<save> [I<path>]
+
+Write metadata to file.
+
+=item B<status> [I<path>]
+
+Show status
+
+=item B<version>
+
+Display version information.
+
+=back
+
+=head1 SECURITY CONSIDERATIONS
+
+B<metamonger> can set metadata on files.
+This means it is able to add/remove write permissions.
+It can also change the modification times of files, potentially making make(1) ignore them in a rebuild.
+Don't act stupidly, as B<metamonger> will happily allow you to shoot yourself in the foot; same as rm(1).
+
+=head1 BUGS
+
+None are known at this time, but reports and/or patches are more than welcome.
+
+=head1 AUTHOR
+
+This POD/manpage and B<metamonger> itself were written by Richard "RichiH" Hartmann.
+
+Errietta "erry" Kostala made significant contributions and implemented the test suite from scratch.
+
+=head1 COPYRIGHT
+
+Copyright 2012-2013 Richard Hartmann <S<richih@debian.org>>.
+
+Licensed under the GNU GPL version 2 or higher.
+
+https://github.com/RichiH/metamonger
+
+=head1 SEE ALSO
+
+stat(1), stat(2)

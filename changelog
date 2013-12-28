@@ -1,5 +1,12 @@
 2013-09-07  Richard Hartmann <richih@debian.org>
 
+	* Switch to git-style parameters
+	* Tons of bugs fixes
+	* Tons of tests
+	* Nicer output formatting
+
+2013-09-07  Richard Hartmann <richih@debian.org>
+
 	* Support --restore
 	* Support --config
 	* Support --no-act

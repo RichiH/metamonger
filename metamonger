@@ -18,7 +18,7 @@ use PadWalker qw/peek_my/;
 use Shell::Command;
 
 # global variables
-my $VERSION = '0.20130907';
+my $VERSION = '0.20131228';
 my $STORAGE_VERSION = '0';
 my $STORAGE = '.metamonger';
 my $IGNORE  = '.metamongerignore';
@@ -291,17 +291,16 @@ sub help {
 	version             Display version information
 
 	Options:
-
-	--config            Specify config file
+	--config            Specify custom config file
 	--debug             Print debug messages
-	--dereference|L     Always follow symlinks (default)
-	--no-dereference|P  Never follow symlinks
+	--dereference|-L    Always follow symlinks (default)
+	--no-dereference|-P Never follow symlinks
 
-	--no-act|n          Do not act; print results only
+	--no-act|-n         Do not act; print results only
 	--untracked         Show untracked files
 	--untracked<=no/normal/all>
 
-	--verbose|v         Print verbose messages
+	--verbose|-v        Print verbose messages
 
 ";
 	exit $ret;
