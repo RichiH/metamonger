@@ -5,6 +5,7 @@ Priority: optional
 Standards-Version: 3.9.4
 Build-Depends: debhelper (>= 7),
                libconfig-simple-perl,
+               libfile-lchown-perl,
                libfile-util-perl,
                libhash-diff-perl,
                libhash-merge-simple-perl,
@@ -23,6 +24,7 @@ Architecture: all
 Depends: ${misc:Depends},
          ${perl:Depends},
          libconfig-simple-perl,
+               libfile-lchown-perl,
          libfile-util-perl,
          libhash-merge-simple-perl,
          libjson-perl,
