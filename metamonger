@@ -291,11 +291,10 @@ sub help {
 	version             Display version information
 
 	Options:
-
-	--config            Specify config file
+	--config            Specify custom config file
 	--debug             Print debug messages
-	--dereference|L     Always follow symlinks (default)
-	--no-dereference|P  Never follow symlinks
+	--dereference|-L    Always follow symlinks (default)
+	--no-dereference|-P Never follow symlinks
 
 	--no-act|n          Do not act; print results only
 	--untracked         Show untracked files
