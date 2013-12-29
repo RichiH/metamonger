@@ -1,4 +1,4 @@
-metamonger (0.20131228-1) UNRELEASED; urgency=low
+metamonger (0.20131228-1) unstable; urgency=low
 
   * New upstream release
     + Switch to git-style parameters
@@ -6,7 +6,7 @@ metamonger (0.20131228-1) UNRELEASED; urgency=low
     + Tons of tests
     + Nicer output formatting
 
- -- Richard Hartmann <richih@debian.org>  Sat, 28 Dec 2013 18:27:25 +0100
+ -- Richard Hartmann <richih@debian.org>  Sun, 29 Dec 2013 02:30:36 +0100
 
 metamonger (0.20130907-1) experimental; urgency=low
 
