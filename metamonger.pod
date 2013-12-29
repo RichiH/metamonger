@@ -1,6 +1,6 @@
 =head1 NAME
 
-metamonger - Save, diff, and restore metadata on files
+metamonger - Save, diff, and restore filesystem metadata
 
 =head1 SYNOPSIS
 
