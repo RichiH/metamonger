@@ -2,13 +2,14 @@ Source: metamonger
 Maintainer: Richard Hartmann <richih@debian.org>
 Section: misc
 Priority: optional
-Standards-Version: 3.9.4
+Standards-Version: 3.9.5
 Build-Depends: debhelper (>= 7),
                libconfig-simple-perl,
                libfile-lchown-perl,
                libfile-util-perl,
                libhash-diff-perl,
                libhash-merge-simple-perl,
+               libjson-perl,
                liblog-contextual-perl,
                liblog-log4perl-perl,
                libpadwalker-perl,

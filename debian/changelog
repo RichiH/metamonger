@@ -1,3 +1,11 @@
+metamonger (0.20131228-3) unstable; urgency=medium
+
+  * Packaging changes
+    + Fixed missing install dependency on libjson-perl (Closes: 755330)
+    + Bumped Standards-Version to 3.9.5 (no changes)
+
+ -- Richard Hartmann <richih@debian.org>  Sun, 03 Aug 2014 14:48:38 +0200
+
 metamonger (0.20131228-2) unstable; urgency=low
 
   * Packaging changes
