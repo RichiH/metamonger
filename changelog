@@ -1,4 +1,9 @@
-2013-09-07  Richard Hartmann <richih@debian.org>
+2014-10-08  Richard Hartmann <richih@debian.org>
+
+	* Fix Perl warning in 5.20
+	* Lots of help improvements
+
+2013-12-28  Richard Hartmann <richih@debian.org>
 
 	* Switch to git-style parameters
 	* Tons of bugs fixes
