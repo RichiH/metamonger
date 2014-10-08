@@ -92,7 +92,7 @@ sub diff_hashes {
 	my %diff_hash = %{ diff( $a, $b ) };
 
 	# Sort the hash as the output is for human consumption
-	for my $file_name (sort keys $diff_hash{'metadata'}) {
+	for my $file_name (sort keys %{$diff_hash{'metadata'}}) {
 		next unless defined $diff_hash{'metadata'}{$file_name};
 
 		$error_count += &$execute_sub($file_name, \%{$a->{'metadata'}{$file_name}}, \%{$b->{'metadata'}{$file_name}}, \%{$diff_hash{'metadata'}{$file_name}});
@@ -116,10 +116,10 @@ sub handle_untracked {
 sub print_diff {
 	my ($file_name, $fs_ref, $file_metadata_ref, $diff_ref) = @_;
 
-	return 0 if !keys $file_metadata_ref;
+	return 0 if !keys %{$file_metadata_ref};
 
 	# Sort the hash as 5.18 made static tests fail; yes, this is an ugly hack that eats performance
-	foreach my $metadata (sort keys $diff_ref ) {
+	foreach my $metadata (sort keys %{$diff_ref} ) {
 		next if !$file_metadata_ref->{$metadata};
 
 		print "file: $file_name: $metadata: $file_metadata_ref->{$metadata} ==> $diff_ref->{$metadata}\n";
@@ -135,7 +135,7 @@ sub print_untracked_all {
 
 	my @untracked_files;
 
-	foreach my $file (keys $fs_ref->{metadata}) {
+	foreach my $file (keys %{$fs_ref->{metadata}}) {
 		if (!$file_metadata_ref->{metadata}{$file}) {
 			push @untracked_files, $file;
 		}
@@ -216,7 +216,7 @@ sub get_file_metadata_from_fs {
 		# assume we want the full FS data.
 		next if (!$file_metadata_ref->{config});
 
-		for my $metadata_type (keys $file_metadata_ref->{config}{tracked_metadata}) {
+		for my $metadata_type (keys %{$file_metadata_ref->{config}{tracked_metadata}}) {
 			delete $file_metadata_ref->{metadata}{$file}{$metadata_type} unless $file_metadata_ref->{config}{tracked_metadata}{$metadata_type};
 		}
 	}
@@ -315,9 +315,9 @@ sub load_config {
 	my %cfg;
 	Config::Simple->import_from($config_file, \%cfg) or die Config::Simple->error();
 
-	foreach my $option (keys $file_metadata_ref->{config}) {
+	foreach my $option (keys %{$file_metadata_ref->{config}}) {
 		if ($option eq 'tracked_metadata') {
-			foreach my $metadata (keys $file_metadata_ref->{config}{tracked_metadata}) {
+			foreach my $metadata (keys %{$file_metadata_ref->{config}{tracked_metadata}}) {
 				$file_metadata_ref->{config}{tracked_metadata}{$metadata} = $cfg{"tracked_metadata.$metadata"} if defined $cfg{"tracked_metadata.$metadata"};
 			}
 		} else {
@@ -346,9 +346,9 @@ sub set_metadata_on_file {
 	my ($file_name, $file_metadata_ref, $fs_ref, $diff_ref) = @_;
 
 	# Skip processing if the file has no stored metadata in our storage
-	return 0 if (!keys $file_metadata_ref);
+	return 0 if (!keys %{$file_metadata_ref});
 	# Skip processing unless the file we are looking at has been selected for restoration
-	return 0 if (!keys $fs_ref);
+	return 0 if (!keys %{$fs_ref});
 
 	my $error_count = 0;
 	my $written_atime = 0;
@@ -359,7 +359,7 @@ sub set_metadata_on_file {
 	}
 
 	# Sort the hash as 5.18 made static tests fail; yes, this is an ugly hack that eats performance
-	for my $metadata_name (sort keys $diff_ref) {
+	for my $metadata_name (sort keys %{$diff_ref}) {
 		next if !defined $file_metadata_ref->{$metadata_name};
 
 		my $metadata_value = $diff_ref->{$metadata_name};
