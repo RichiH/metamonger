@@ -1,3 +1,11 @@
+metamonger (0.20141008-1) unstable; urgency=medium
+
+  * New upstream release
+    + Fix Perl warning in 5.20
+    + Lots of help improvements
+
+ -- Richard Hartmann <richih@debian.org>  Thu, 09 Oct 2014 23:14:04 +0200
+
 metamonger (0.20131228-4) unstable; urgency=medium
 
   * Packaging changes
