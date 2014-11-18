@@ -1,3 +1,10 @@
+metamonger (0.20141118-1) unstable; urgency=medium
+
+  * New upstream release
+    + Use 32 bit epoch in all tests (Closes: #769271)
+
+ -- Richard Hartmann <richih@debian.org>  Tue, 18 Nov 2014 13:30:01 +0100
+
 metamonger (0.20141008-1) unstable; urgency=medium
 
   * New upstream release
