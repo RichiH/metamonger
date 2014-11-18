@@ -1,3 +1,7 @@
+2014-11-18  Richard Hartmann <richih@debian.org>
+
+	* Fix Debian #769271
+
 2014-10-08  Richard Hartmann <richih@debian.org>
 
 	* Fix Perl warning in 5.20
