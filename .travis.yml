@@ -1,0 +1,9 @@
+language: perl
+before_install:
+  - cpanm Shell::Command
+script:
+  - make test
+notifications:
+  email:
+    on_success: change
+    on_failure: always
