@@ -8,6 +8,20 @@ perl:
   - "5.10"
 before_install:
   - cpanm Shell::Command
+  - cpanm Config::Simple
+  - cpanm Data::Dumper
+  - cpanm File::Copy
+  - cpanm File::Util
+  - cpanm Getopt::Long
+  - cpanm Hash::Diff
+  - cpanm Hash::Merge::Simple
+  - cpanm JSON
+  - cpanm Log::Contextual
+  - cpanm Log::Log4perl
+  - cpanm PadWalker
+  - cpanm Shell::Command
+  - cpanm Test::Most
+  - cpanm utf8::all
 script:
   - make test
 notifications:
