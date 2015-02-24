@@ -25,6 +25,7 @@ before_install:
   - "cpanm Test::Most"
   - "cpanm utf8::all"
 script:
+  - ls -lR ~
   - make test
 notifications:
   email:
