@@ -22,7 +22,6 @@ before_install:
   - "cpanm Log::Log4perl"
   - "cpanm PadWalker"
   - "cpanm Shell::Command"
-  - "cpanm Test::Most"
   - "cpanm utf8::all"
 script:
   - ls -lR ~
