@@ -1,4 +1,6 @@
 language: perl
+perl:
+  - "5.20"
 before_install:
   - "cpanm Shell::Command"
   - "cpanm Config::Simple"
