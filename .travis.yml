@@ -24,7 +24,7 @@ before_install:
   - "cpanm Shell::Command"
   - "cpanm utf8::all"
 script:
-  - ls -lR ~
+  - find ~ -path '*Config/Simple*'
   - make test
 notifications:
   email:
