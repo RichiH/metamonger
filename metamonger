@@ -4,6 +4,9 @@ use strict;
 use warnings;
 use v5.10;
 
+use lib '/home/travis/perl5/perlbrew/perls/5.20/lib/site_perl/5.20.0';
+use lib '/home/travis/perl5/perlbrew/perls/5.20/lib/site_perl/5.20.0/x86_64-linux';
+
 use Config::Simple;
 use Data::Dumper;
 use File::Util;
