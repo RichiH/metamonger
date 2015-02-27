@@ -17,7 +17,7 @@ before_install:
   - "cpanm Shell::Command"
   - "cpanm utf8::all"
 script:
-  - export PERL5LIB=/home/travis/perl5/perlbrew/perls/5.20/lib/site_perl/5.20.0
+  - export PERL5LIB="/home/travis/perl5/perlbrew/perls/5.20/lib/site_perl/5.20.0 /home/travis/perl5/perlbrew/perls/5.20/lib/site_perl/5.20.0/x86_64-linux"
   - find ~ -path '*Config/Simple*'
   - find ~ -path '*PadWalker*'
   - make test
