@@ -19,6 +19,7 @@ before_install:
 script:
   - export PERL5LIB=/home/travis/perl5/perlbrew/perls/5.20/lib/site_perl/5.20.0
   - find ~ -path '*Config/Simple*'
+  - find ~ -path '*Padwalker*'
   - make test
 notifications:
   email:
