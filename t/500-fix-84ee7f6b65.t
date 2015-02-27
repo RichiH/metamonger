@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 #
 # Guard against the bug fixed in 84ee7f6b65edc9be1c3095155b0ac7157899efad
