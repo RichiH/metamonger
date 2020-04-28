@@ -16,7 +16,7 @@ Build-Depends: debhelper-compat (= 12),
                libmodule-install-perl,
                libshell-command-perl,
                libtest-most-perl,
-Vcs-Git: git://github.com/RichiH/metamonger.git
+Vcs-Git: https://github.com/RichiH/metamonger.git
 Vcs-Browser: https://github.com/RichiH/metamonger
 Homepage: https://github.com/RichiH/metamonger
 
