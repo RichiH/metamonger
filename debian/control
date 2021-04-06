@@ -2,8 +2,8 @@ Source: metamonger
 Maintainer: Richard Hartmann <richih@debian.org>
 Section: misc
 Priority: optional
-Standards-Version: 3.9.6
-Build-Depends: debhelper (>= 7),
+Standards-Version: 4.5.1
+Build-Depends: debhelper (>= 13),
                libconfig-simple-perl,
                libfile-lchown-perl,
                libfile-util-perl,
@@ -16,9 +16,11 @@ Build-Depends: debhelper (>= 7),
                libmodule-install-perl,
                libshell-command-perl,
                libtest-most-perl,
-Vcs-Git: git://github.com/RichiH/metamonger.git
+Vcs-Git: https://github.com/RichiH/metamonger.git
 Vcs-Browser: https://github.com/RichiH/metamonger
 Homepage: https://github.com/RichiH/metamonger
+Testsuite: autopkgtest-pkg-perl
+Rules-Requires-Root: no
 
 Package: metamonger
 Architecture: all
