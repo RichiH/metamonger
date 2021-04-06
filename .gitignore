@@ -8,3 +8,9 @@ Makefile
 blib/
 inc/
 pm_to_blib
+debian/debhelper-build-stamp
+MYMETA.json
+debian/.debhelper/
+debian/metamonger
+debian/metamonger.substvars
+debian/files

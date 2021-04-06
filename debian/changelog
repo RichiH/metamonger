@@ -1,3 +1,10 @@
+metamonger (0.20210406-1) unstable; urgency=medium
+
+  * New upstream release
+  * Update Debian packaging
+
+ -- Richard Hartmann <richih@debian.org>  Tue, 06 Apr 2021 21:51:47 +0200
+
 metamonger (0.20150503-1) unstable; urgency=medium
 
   * New upstream release
