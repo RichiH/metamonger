@@ -37,31 +37,31 @@ my $output;
 
 $output = `./metamonger --config=../files/config_empty save --no-act --no-dereference`;
 
-ok $output =~ '"link":{"mtime":42}';
-ok $output =~ '"original":{"mtime":1325376000}';
+ok $output =~ '"link":\{"mtime":42}';
+ok $output =~ '"original":\{"mtime":1325376000}';
 
 
 $output = `./metamonger --config=../files/config_empty save --no-act -P`;
 
-ok $output =~ '"link":{"mtime":42}';
-ok $output =~ '"original":{"mtime":1325376000}';
+ok $output =~ '"link":\{"mtime":42}';
+ok $output =~ '"original":\{"mtime":1325376000}';
 
 
 $output = `./metamonger --config=../files/config_empty save --no-act --dereference`;
 
-ok $output =~ '"link":{"mtime":1325376000}';
-ok $output =~ '"original":{"mtime":1325376000}';
+ok $output =~ '"link":\{"mtime":1325376000}';
+ok $output =~ '"original":\{"mtime":1325376000}';
 
 $output = `./metamonger --config=../files/config_empty save --no-act -L`;
 
-ok $output =~ '"link":{"mtime":1325376000}';
-ok $output =~ '"original":{"mtime":1325376000}';
+ok $output =~ '"link":\{"mtime":1325376000}';
+ok $output =~ '"original":\{"mtime":1325376000}';
 
 
 $output = `./metamonger --config=../files/config_empty save --no-act`;
 
-ok $output =~ '"link":{"mtime":1325376000}';
-ok $output =~ '"original":{"mtime":1325376000}';
+ok $output =~ '"link":\{"mtime":1325376000}';
+ok $output =~ '"original":\{"mtime":1325376000}';
 
 
 rm_rf '../etc';
