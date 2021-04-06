@@ -1,3 +1,7 @@
+2021-04-06  Richard Hartmann <richih@debian.org>
+
+	* Fix Perl warnings
+
 2014-05-03  Richard Hartmann <richih@debian.org>
 
 	* Travix CI integration

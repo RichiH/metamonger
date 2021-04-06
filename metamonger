@@ -18,7 +18,7 @@ use PadWalker qw/peek_my/;
 use Shell::Command;
 
 # global variables
-my $VERSION = '0.20150303';
+my $VERSION = '0.20210406';
 my $STORAGE_VERSION = '0';
 my $STORAGE = '.metamonger';
 my $IGNORE  = '.metamongerignore';
@@ -433,7 +433,7 @@ sub write_metadata_to_fs {
 sub write_metadata_to_storage {
 	my ($file_metadata_ref) = @_;
 	my $json = to_json($file_metadata_ref, {canonical => 1});
-	$json =~ s/"metadata":{/"metadata":{\n/;
+	$json =~ s/"metadata":\{/"metadata":\{\n/;
 	$json =~ s/},/},\n/g;
 	if ($file_metadata_ref->{config}{strict_json} == 0) {
 		$json =~ s/}}}/},\n}}\n/g;
