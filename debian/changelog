@@ -1,3 +1,9 @@
+metamonger (0.20210406-3) unstable; urgency=medium
+
+  * Fix autopkgtest dependencies
+
+ -- Richard Hartmann <richih@debian.org>  Wed, 07 Apr 2021 20:27:51 +0200
+
 metamonger (0.20210406-2) unstable; urgency=medium
 
   * Switch from autopkgtest-pkg-perl to debian/tests/control
