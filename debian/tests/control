@@ -1,0 +1,3 @@
+Test-Command: prove
+Depends: perl
+Restrictions: allow-stderr
