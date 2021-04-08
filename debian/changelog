@@ -1,3 +1,9 @@
+metamonger (0.20210406-5) unstable; urgency=medium
+
+  * Fix autopkgtest dependencies
+
+ -- Richard Hartmann <richih@debian.org>  Thu, 08 Apr 2021 15:51:59 +0200
+
 metamonger (0.20210406-4) unstable; urgency=medium
 
   * Fix autopkgtest dependencies
