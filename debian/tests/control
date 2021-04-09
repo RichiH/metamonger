@@ -1,3 +1,3 @@
 Test-Command: prove
-Depends: perl, libshell-command-perl, libtest-most-perl, libjson-perl, libconfig-simple-perl, libfile-util-perl
+Depends: perl, libshell-command-perl, libtest-most-perl, libjson-perl, libconfig-simple-perl, libfile-util-perl, libhash-diff-perl
 Restrictions: allow-stderr

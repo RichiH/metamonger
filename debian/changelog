@@ -1,3 +1,12 @@
+metamonger (0.20210406-6) unstable; urgency=medium
+
+  * Fix autopkgtest dependencies
+    + Documentation on how to run all test, including vcswatch failing to
+      parse what dch generates, locally instead of treating britney et al
+      as a CI pipeline sure would be nice.
+
+ -- Richard Hartmann <richih@debian.org>  Fri, 09 Apr 2021 08:54:45 +0200
+
 metamonger (0.20210406-5) unstable; urgency=medium
 
   * Fix autopkgtest dependencies
